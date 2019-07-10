@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg version="1.2" baseProfile="tiny" width="50.47mm" height="50.47mm" viewBox="4477 12077 5047 5047" preserveAspectRatio="xMidYMid" fill-rule="evenodd" stroke-width="28.222" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve">
+ <g visibility="visible" id="Slide_1">
+  <g>
+   <path fill="rgb(204,204,204)" stroke="none" d="M 7000,16700 L 4900,16700 4900,12500 9100,12500 9100,16700 7000,16700 Z"/>
+   <path fill="none" stroke="rgb(204,204,204)" id="Drawing_1_0" stroke-width="847" stroke-linejoin="round" d="M 7000,16700 L 4900,16700 4900,12500 9100,12500 9100,16700 7000,16700 Z"/>
+  </g>
+  <g>
+   <path fill="none" stroke="rgb(51,102,153)" id="Drawing_2_0" stroke-width="212" stroke-linejoin="round" stroke-linecap="round" d="M 6100,15800 L 7000,13500"/>
+  </g>
+  <g>
+   <path fill="none" stroke="rgb(51,102,153)" id="Drawing_3_0" stroke-width="212" stroke-linejoin="round" stroke-linecap="round" d="M 7000,13500 L 7900,15800"/>
+  </g>
+  <g>
+   <path fill="none" stroke="rgb(51,102,153)" id="Drawing_4_0" stroke-width="212" stroke-linejoin="round" stroke-linecap="round" d="M 5200,14800 L 8800,14800"/>
+  </g>
+  <g>
+   <path fill="rgb(0,102,102)" stroke="none" d="M 4800,14800 L 5801,15801 4800,15801 4800,14800 4800,14800 Z"/>
+   <path fill="none" stroke="rgb(0,102,102)" id="Drawing_5_0" stroke-width="212" stroke-linejoin="round" d="M 4800,14800 L 5801,15801 4800,15801 4800,14800 4800,14800 Z"/>
+   <rect fill="none" stroke="none" x="4800" y="14800" width="1001" height="1001"/>
+  </g>
+  <g>
+   <path fill="rgb(0,102,102)" stroke="none" d="M 9200,14800 L 8199,15801 9200,15801 9200,14800 9200,14800 Z"/>
+   <path fill="none" stroke="rgb(0,102,102)" id="Drawing_6_0" stroke-width="212" stroke-linejoin="round" d="M 9200,14800 L 8199,15801 9200,15801 9200,14800 9200,14800 Z"/>
+   <rect fill="none" stroke="none" x="8200" y="14800" width="1001" height="1001"/>
+  </g>
+ </g>
+</svg>
