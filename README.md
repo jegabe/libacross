@@ -1,18 +1,5 @@
 # libacross
 
-+-----------------------------------+
-|                                   |
-|                 A                 |
-|                A A                |
-|               A   A               |
-|              A     A              |
-|  #  AAAAAAAAAAAAAAAAAAAAAAAAA  #  |
-|  ###       A         A       ###  |
-|  ######   A           A    #####  |
-|  ####### A             A #######  |
-|                                   |
-+-----------------------------------+
-
 L I B A C R O S S - Using C++ containers
  across DLL- and ABI-stable boundaries
 
