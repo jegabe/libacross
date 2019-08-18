@@ -3,6 +3,9 @@
 L I B A C R O S S - Using Standard C++ (STL) containers
  across DLL- and ABI boundaries
 
+Development of this library is in an early state. Please wait for release of 1.0 to have
+a stable version, or contact the author to help to get version 1.0 ready (see bottom)
+
 If you like this project, please refer to it with a link or
 some other reference. You can use this ASCII art icon as well
 as the supplied graphical icons for that purpose.
