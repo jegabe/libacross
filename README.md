@@ -83,7 +83,8 @@ Dll:
 
 More examples and a more extensive, more beatiful doc will be put under the doc/ folder.
 
-A secondary use of the library is to code a DLL 
+A secondary use of the library is to access standard C++ containers from the C language, by having either the main executable or the Dll coded
+in C++ and the other part in C. This feature is not ready yet, but kept in mind, so that the future addition of that is possible.
 
 Have fun with the library!
 
