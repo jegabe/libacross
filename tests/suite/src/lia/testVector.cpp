@@ -43,18 +43,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef libv_libv_h_INCLUDED
-#define libv_libv_h_INCLUDED
+#include <gtest/gtest.h>
+#include <lia/DllLoader.h>
+#include <lia/IVector.h>
 
-#include <lia/defs.h>
-#include <libv/IApi.h>
+using namespace lia::dll_loader;
 
-#ifdef libv_INSIDE_LIBRARY
-	#define libv_API lia_EXPORT
-#else
-	#define libv_API lia_IMPORT
-#endif
+namespace {
 
-lia_EXTERN_C libv_API libv::IApi* lia_CALL abiGetApi();
+typedef lia::IVector<lia::int32_t>* (lia_CALL *CreateInt32VectorFunction)(void);
 
-#endif
+}
+
+TEST(IVector, Blah) {
+	const auto creators = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
+	EXPECT_GT(creators.size(), 0);
+	for (const auto creator: creators) {
+		auto* pVector = (*creator)();
+		EXPECT_EQ(pVector->size(), 0);
+		delete pVector;
+	}
+}

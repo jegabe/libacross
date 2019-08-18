@@ -43,33 +43,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#include <vector>
+#include <lia/testDllApi.h>
 #include <lia/VectorRef.h>
-#include <libv/libv.h>
 
-using namespace std;
 using namespace lia;
-using namespace libv;
 
-namespace {
-
-class Api: public IApi {
-public:
-
-	virtual ~Api() {}
-
-	virtual IVector<int32_t>* lia_CALL abiCreateInt32Vector() lia_NOEXCEPT lia_OVERRIDE {
-		return new VectorRef<int32_t, std::vector<int32_t> >();
-	}
-	virtual IVector< IVector<int32_t> >* lia_CALL abiCreateInt32VectorVector() lia_NOEXCEPT lia_OVERRIDE {
-		return new VectorRef<IVector<int32_t>, std::vector< std::vector<int32_t> > >();
-	}
-};
-
-Api g_api;
-
+lia_TEST_DLL_API IVector<int32_t>* lia_CALL createInt32Vector() {
+	return new VectorRef<int32_t, std::vector<int32_t> >();
 }
 
-lia_EXTERN_C libv_API libv::IApi* lia_CALL abiGetApi() {
-	return &g_api;
+lia_TEST_DLL_API IVector< IVector<int32_t> >* lia_CALL createInt32VectorVector() {
+	return new VectorRef<IVector<int32_t>, std::vector< std::vector<int32_t> > >();
 }

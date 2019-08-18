@@ -43,20 +43,61 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef libv_IApi_h_INCLUDED
-#define libv_IApi_h_INCLUDED
+#include <lia/DllLoader.h>
+#include <lia/defs.h>
+#ifdef _WIN32
+	#define WIN32_LEAN_AND_MEAN
+	#define VC_EXTRALEAN
+	#include <Windows.h>
+#endif
 
-#include <lia/IVector.h>
+using namespace std;
 
-namespace libv {
+namespace {
 
-class IApi {
-public:
-
-	virtual lia::IVector<int32_t>* lia_CALL abiCreateInt32Vector() lia_NOEXCEPT = 0;
-	virtual lia::IVector< lia::IVector<int32_t> >* lia_CALL abiCreateInt32VectorVector() lia_NOEXCEPT = 0;
-};
-
+#ifdef _WIN32
+vector<HMODULE> g_Dlls;
+#endif
+	
 }
 
+namespace lia {
+namespace dll_loader {
+
+bool addDll(const string& path) {
+	bool result = false;
+#ifdef _WIN32
+	const auto hDll = LoadLibraryA(path.c_str());
+	if (hDll != lia_NULLPTR) {
+		g_Dlls.push_back(hDll);
+		result = true;
+	}
 #endif
+	return result;
+}
+
+void unloadAllDlls() {
+#ifdef _WIN32
+	for (auto dll: g_Dlls) {
+		FreeLibrary(dll);
+	}
+	g_Dlls.clear();
+#endif
+}
+
+vector<FunctionPointer> getDllFunctions(const string& functionName) {
+	vector<FunctionPointer> result;
+	result.reserve(g_Dlls.size());
+#ifdef _WIN32
+	for (auto dll: g_Dlls) {
+		const auto proc = GetProcAddress(dll, functionName.c_str());
+		if (proc != lia_NULLPTR) {
+			result.push_back((FunctionPointer)proc);
+		}
+	}
+#endif
+	return result;
+}
+
+}
+}
