@@ -66,12 +66,13 @@ public:
 		::operator delete(p);
 	}
 
-	virtual void lia_CALL abiDestroy() lia_NOEXCEPT lia_OVERRIDE {
-		::operator delete(this);
+	virtual void lia_CALL abiGetIVectorVersion(InterfaceVersion& v) const lia_NOEXCEPT lia_OVERRIDE {
+		v.major = 0;
+		v.minor = 1;
 	}
 
-	virtual abi_size_t lia_CALL abiGetNumOfFollowingFunctions() const lia_NOEXCEPT lia_OVERRIDE {
-		return static_cast<abi_size_t>(7);
+	virtual void lia_CALL abiDestroy() lia_NOEXCEPT lia_OVERRIDE {
+		delete this;
 	}
 
 	virtual void lia_CALL abiClear() lia_NOEXCEPT lia_OVERRIDE {

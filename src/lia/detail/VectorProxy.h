@@ -91,20 +91,20 @@ public:
 		return this;
 	}
 
-	IVector<T>& toIVector() lia_NOEXCEPT {
+	IVector<T>& getAbi() lia_NOEXCEPT {
 		return *reinterpret_cast<IVector<T>*>(m_buf.data);
 	}
 
-	const IVector<T>& toIVector() const lia_NOEXCEPT {
+	const IVector<T>& getAbi() const lia_NOEXCEPT {
 		return *reinterpret_cast<const IVector<T>*>(m_buf.data);
 	}
 
 	operator IVector<T>&() lia_NOEXCEPT {
-		return toIVector();
+		return getAbi();
 	}
 
 	operator const IVector<T>&() const lia_NOEXCEPT {
-		return toIVector();
+		return getAbi();
 	}
 
 	VectorProxy() lia_NOEXCEPT {}

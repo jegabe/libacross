@@ -79,16 +79,22 @@ struct MakeTypes< IVector<const T> > {
 
 }
 
-#define lia_IVector_BASE lia::detail::VectorApiMixin<T, \
-                                                     lia::IVector<T>, \
-                                                     typename lia::detail::MakeTypes<T>::Reference, \
-                                                     typename lia::detail::MakeTypes<T>::Pointer, \
-                                                     typename lia::detail::MakeTypes<T>::ConstReference, \
-                                                     typename lia::detail::MakeTypes<T>::ConstPointer \
-                                                    >
+#define lia_IVector_BASE(T) lia::detail::VectorApiMixin<T, \
+                                                        lia::IVector<T>, \
+                                                        typename lia::detail::MakeTypes<T>::Reference, \
+                                                        typename lia::detail::MakeTypes<T>::Pointer, \
+                                                        typename lia::detail::MakeTypes<T>::ConstReference, \
+                                                        typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                       >
 
+//! Interface version history:
+//!
+//! semver | notes
+//! ------ | --------
+//! 0.1    | Pre-release version
+//!
 template<typename T>
-class IVector: public lia_IVector_BASE {
+class IVector: public lia_IVector_BASE(T) {
 public:
 
 	typedef IVector<T> ThisType;
@@ -99,11 +105,11 @@ public:
 		}
 	}
 
-	IVector& toIVector() lia_NOEXCEPT {
+	IVector& getAbi() lia_NOEXCEPT {
 		return *this;
 	}
 
-	const IVector& toIVector() const lia_NOEXCEPT {
+	const IVector& getAbi() const lia_NOEXCEPT {
 		return *this;
 	}
 
@@ -113,8 +119,8 @@ public:
 		return *this;
 	}
 
-	/* vtable index  0 */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
-	/* vtable index  1 */ virtual abi_size_t lia_CALL abiGetNumOfFollowingFunctions() const lia_NOEXCEPT = 0;
+	/* vtable index  0 */ virtual void lia_CALL abiGetIVectorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
+	/* vtable index  1 */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
 	/* vtable index  2 */ virtual void lia_CALL abiClear() lia_NOEXCEPT = 0;
 	/* vtable index  3 */ virtual abi_bool_t lia_CALL abiReserve(abi_size_t n) lia_NOEXCEPT = 0;
 	/* vtable index  4 */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer pElem) lia_NOEXCEPT = 0;
@@ -125,7 +131,7 @@ public:
 
 private:
 
-	typedef lia_IVector_BASE ApiBase;
+	typedef lia_IVector_BASE(T) ApiBase;
 };
 
 #undef lia_IVector_BASE

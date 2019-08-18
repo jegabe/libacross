@@ -60,7 +60,7 @@ namespace detail {
 
 // Mix-in class for adding public std::vector compatible API into sub-class.
 // The class TSubClass that derives from this mixin is required to implement
-// a public function toIVector() that returns a reference to some type that's
+// a public function getAbi() that returns a reference to some type that's
 // equal or API compatible to IVector
 template<typename T,
          typename TSubClass,
@@ -70,22 +70,20 @@ template<typename T,
          typename TConstPointer>
 class VectorApiMixin {
 
-#define virtual "Virtual functions not allowed in mixin class"
-
 public:
 
 	template<typename U, typename V>
 	VectorApiMixin& operator=(const std::vector<U, V>& v) {
-		downCast().toIVector().abiClear();
-		if (!downCast().toIVector().abiReserve(static_cast<abi_size_t>(v.size()))) {
+		lia_ABI.abiClear();
+		if (!lia_ABI.abiReserve(static_cast<abi_size_t>(v.size()))) {
 			lia_THROW0(std::bad_alloc);
 		}
 		abi_size_t newPos = 0;
 		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
 		for (typename std::vector<U, V>::const_iterator iter = v.begin(); iter != v.end(); ++iter) {
 			assignElemPtr(pElem, *iter);
-			if (!downCast().toIVector().abiInsert(newPos, pElem)) {
-				downCast().toIVector().abiClear();
+			if (!lia_ABI.abiInsert(newPos, pElem)) {
+				lia_ABI.abiClear();
 				lia_THROW0(std::bad_alloc);
 			}
 			++newPos;
@@ -95,16 +93,16 @@ public:
 
 	template<typename U>
 	void assign(std::size_t count, const U& value) {
-		downCast().toIVector().abiClear();
-		if (!downCast().toIVector().abiReserve(static_cast<abi_size_t>(count))) {
+		lia_ABI.abiClear();
+		if (!lia_ABI.abiReserve(static_cast<abi_size_t>(count))) {
 			lia_THROW0(std::bad_alloc);
 		}
 		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
 		assignElemPtr(pElem, value);
 		abi_size_t newPos = 0;
 		for (std::size_t i=0; i<count; ++i) {
-			if (!downCast().toIVector().abiInsert(newPos, pElem)) {
-				downCast().toIVector().abiClear();
+			if (!lia_ABI.abiInsert(newPos, pElem)) {
+				lia_ABI.abiClear();
 				lia_THROW0(std::bad_alloc);
 			}
 			++newPos;
@@ -113,13 +111,13 @@ public:
 
 	template<class InputIt>
 	void assign(InputIt first, InputIt last) {
-		downCast().toIVector().abiClear();
+		lia_ABI.abiClear();
 		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
 		abi_size_t newPos = 0;
 		for (InputIt iter=first; iter != last; ++iter) {
 			assignElemPtr(pElem, *iter);
-			if (!downCast().toIVector().abiInsert(newPos, pElem)) {
-				downCast().toIVector().abiClear();
+			if (!lia_ABI.abiInsert(newPos, pElem)) {
+				lia_ABI.abiClear();
 				lia_THROW0(std::bad_alloc);
 			}
 			++newPos;
@@ -128,7 +126,7 @@ public:
 
 	TReference at(std::size_t pos) {
 		TPointer pElem;
-		if (!downCast().toIVector().abiGetAt(static_cast<abi_size_t>(pos), pElem)) {
+		if (!lia_ABI.abiGetAt(static_cast<abi_size_t>(pos), pElem)) {
 				lia_THROW1(std::out_of_range, "in at() call");
 		}
 		return derefElemPtr(pElem);
@@ -136,7 +134,7 @@ public:
 
 	TConstReference at(std::size_t pos) const {
 		TConstPointer pElem;
-		if (!downCast().toIVector().abiGetAtConst(static_cast<abi_size_t>(pos), pElem)) {
+		if (!lia_ABI.abiGetAtConst(static_cast<abi_size_t>(pos), pElem)) {
 				lia_THROW1(std::out_of_range, "in at() call");
 		}
 		return derefElemPtr(pElem);
@@ -144,48 +142,48 @@ public:
 
 	TReference operator[](std::size_t pos) lia_NOEXCEPT {
 		TPointer pElem;
-		(void)downCast().toIVector().abiGetAt(static_cast<abi_size_t>(pos), pElem);
+		(void)lia_ABI.abiGetAt(static_cast<abi_size_t>(pos), pElem);
 		return derefElemPtr(pElem);
 	}
 
 	TConstReference operator[](std::size_t pos) const lia_NOEXCEPT {
 		TConstPointer pElem;
-		(void)downCast().toIVector().abiGetAtConst(static_cast<abi_size_t>(pos), pElem);
+		(void)lia_ABI.abiGetAtConst(static_cast<abi_size_t>(pos), pElem);
 		return derefElemPtr(pElem);
 	}
 
 	TReference front() lia_NOEXCEPT {
 		TPointer pElem;
-		(void)downCast().toIVector().abiGetAt(static_cast<abi_size_t>(0), pElem);
+		(void)lia_ABI.abiGetAt(static_cast<abi_size_t>(0), pElem);
 		return derefElemPtr(pElem);
 	}
 
 	TConstReference front() const lia_NOEXCEPT {
 		TConstPointer pElem;
-		(void)downCast().toIVector().abiGetAtConst(static_cast<abi_size_t>(0), pElem);
+		(void)lia_ABI.abiGetAtConst(static_cast<abi_size_t>(0), pElem);
 		return derefElemPtr(pElem);
 	}
 
 	TReference back() lia_NOEXCEPT {
 		TPointer pElem;
-		const abi_size_t lastPos = static_cast<abi_size_t>(downCast().toIVector().abiGetSize() - 1u);
-		(void)downCast().toIVector().abiGetAt(lastPos, pElem);
+		const abi_size_t lastPos = static_cast<abi_size_t>(lia_ABI.abiGetSize() - 1u);
+		(void)lia_ABI.abiGetAt(lastPos, pElem);
 		return derefElemPtr(pElem);
 	}
 
 	TConstReference back() const lia_NOEXCEPT {
 		TConstPointer pElem;
-		const abi_size_t lastPos = static_cast<abi_size_t>(downCast().toIVector().abiGetSize() - 1u);
-		(void)downCast().toIVector().abiGetAtConst(lastPos, pElem);
+		const abi_size_t lastPos = static_cast<abi_size_t>(lia_ABI.abiGetSize() - 1u);
+		(void)lia_ABI.abiGetAtConst(lastPos, pElem);
 		return derefElemPtr(pElem);
 	}
 
 	bool empty() const lia_NOEXCEPT {
-		return (downCast().toIVector().abiGetSize() == 0);
+		return (lia_ABI.abiGetSize() == 0);
 	}
 
 	std::size_t size() const lia_NOEXCEPT {
-		return static_cast<std::size_t>(downCast().toIVector().abiGetSize());
+		return static_cast<std::size_t>(lia_ABI.abiGetSize());
 	}
 
 	template<typename U, typename V>
@@ -204,8 +202,6 @@ private:
 	const TSubClass& downCast() const lia_NOEXCEPT {
 		return static_cast<const TSubClass&>(*this);
 	}
-
-#undef virtual
 };
 
 lia_STATIC_ASSERT(sizeof(VectorApiMixin<int, int, int&, int*, const int&, const int*>) == 1u, "API class is not allowed to contain any virtual functions");

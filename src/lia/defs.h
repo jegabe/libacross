@@ -320,6 +320,16 @@ struct MakeRef {
 	#define lia_CATCHALL(action) } catch(...) { action; }
 #endif
 
+//! For semver-style versioning of interfaces
+//! The "bugfix" tag is left out because interfaces can't have
+//! bugs fixed without changing the ABI
+struct InterfaceVersion {
+	uint32_t major; //!< Is incremented when the ABI breaks and a completely new version is added
+	uint32_t minor; //!< Is incremented when a new function is appended to the interface
+};
+
+#define lia_ABI (downCast().getAbi())
+
 }
 
 #else /* C compiler */
