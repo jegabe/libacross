@@ -43,20 +43,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef lia_testDllApi_h_INCLUDED
-#define lia_testDllApi_h_INCLUDED
-
-#include <lia/IVector.h>
+#include <gtest/gtest.h>
+#include <lia/DllLoader.h>
 #include <lia/IBasicString.h>
 
-#ifdef lia_INSIDE_TEST_DLL
-	#define lia_TEST_DLL_API lia_EXPORT
-#else
-	#define lia_TEST_DLL_API lia_IMPORT
-#endif
+using namespace lia::dll_loader;
 
-lia_EXTERN_C lia_TEST_DLL_API lia::IVector<lia::int32_t>* lia_CALL createInt32Vector();
-lia_EXTERN_C lia_TEST_DLL_API lia::IVector< lia::IVector<lia::int32_t> >* lia_CALL createInt32VectorVector();
-lia_EXTERN_C lia_TEST_DLL_API lia::IString* lia_CALL createString();
+namespace {
 
+typedef lia::IString* (lia_CALL *CreateStringFunction)(void);
+
+}
+
+TEST(IBasicString, Blah) {
+	const auto creators = getDllFunctions<CreateStringFunction>("createString");
+	EXPECT_GT(creators.size(), 0);
+	for (const auto creator: creators) {
+		auto* pString = (*creator)();
+#if 0
+		EXPECT_EQ(pVector->size(), 0);
 #endif
+		delete pString;
+	}
+}

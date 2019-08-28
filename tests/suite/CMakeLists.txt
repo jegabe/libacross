@@ -56,6 +56,7 @@ set (Sources
 	src/main.cpp
 	src/lia/DllLoader.h
 	src/lia/DllLoader.cpp
+	src/lia/testString.cpp
 	src/lia/testVector.cpp
 ) 
 

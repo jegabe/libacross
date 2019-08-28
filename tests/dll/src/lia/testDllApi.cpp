@@ -45,6 +45,7 @@ THE SOFTWARE.
 */
 #include <lia/testDllApi.h>
 #include <lia/VectorRef.h>
+#include <lia/BasicStringRef.h>
 
 using namespace lia;
 
@@ -54,4 +55,8 @@ lia_TEST_DLL_API IVector<int32_t>* lia_CALL createInt32Vector() {
 
 lia_TEST_DLL_API IVector< IVector<int32_t> >* lia_CALL createInt32VectorVector() {
 	return new VectorRef<IVector<int32_t>, std::vector< std::vector<int32_t> > >();
+}
+
+lia_TEST_DLL_API IString* lia_CALL createString() {
+	return new BasicStringRef<char, std::string>();
 }
