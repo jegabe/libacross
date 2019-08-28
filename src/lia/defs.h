@@ -126,6 +126,7 @@ THE SOFTWARE.
 #ifdef __cplusplus
 
 #include <cstddef> // for std::size_t
+#include <cwchar>  // for WCHAR_MIN and WCHAR_MAX
 
 #define lia_EXTERN_C extern "C"
 
@@ -329,6 +330,36 @@ struct InterfaceVersion {
 };
 
 #define lia_ABI (downCast().getAbi())
+
+//! \def lia_HAS_EXPECTED_WCHAR_T_SIZE
+//! \hideinitializer
+//! Is defined to one (1) when wchar_t is 16 bits under windows and 32 bits under linux (unsigned) for the currently used build environment,
+//! which is the default or expected size for those platforms.
+//! If that's not the case, it is defined to be (0) and as a consequence, no lia::IString<wchar_t> support will be compiled, in order
+//! to avoid errors during function calls between modules built with different compilers
+#ifdef _WIN32
+	#if ((WCHAR_MIN == 0) && (WCHAR_MAX == 0xFFFF))
+		#define lia_HAS_EXPECTED_WCHAR_T_SIZE 1
+	#endif
+#elif (defined (__linux__) || defined(__gnu_linux__))
+	#if ((WCHAR_MIN == 0) && (WCHAR_MAX == 0xFFFFFFFF))
+		#define lia_HAS_EXPECTED_WCHAR_T_SIZE 1
+	#endif
+#endif
+#ifndef lia_HAS_EXPECTED_WCHAR_T_SIZE
+	#define lia_HAS_EXPECTED_WCHAR_T_SIZE 0
+#endif
+
+// Re-implementation of std::is_same because this lib also supports old C++ (98) standard
+template<typename T, typename U>
+struct IsSame {
+  static const bool value = false;
+};
+
+template<typename T>
+struct IsSame<T, T> {
+  static const bool value = true;
+};
 
 }
 

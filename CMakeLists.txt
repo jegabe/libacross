@@ -53,11 +53,14 @@ else()
 endif() 
 
 set (Sources
+	src/lia/detail/BasicStringApiMixin.h
 	src/lia/detail/PopWarnings.h
 	src/lia/detail/PushWarnings.h
 	src/lia/detail/VectorApiMixin.h
 	src/lia/detail/VectorProxy.h
+	src/lia/BasicStringRef.h
 	src/lia/defs.h
+	src/lia/IBasicString.h
 	src/lia/IVector.h
 	src/lia/VectorRef.h
 	src/DummyMain.cpp
