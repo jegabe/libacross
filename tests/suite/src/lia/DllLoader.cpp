@@ -49,6 +49,8 @@ THE SOFTWARE.
 	#define WIN32_LEAN_AND_MEAN
 	#define VC_EXTRALEAN
 	#include <Windows.h>
+#elif (defined(__gnu_linux__) || defined(__linux__))
+	#include <dlfcn.h>
 #endif
 
 using namespace std;
@@ -56,7 +58,9 @@ using namespace std;
 namespace {
 
 #ifdef _WIN32
-vector<HMODULE> g_Dlls;
+vector<HMODULE> g_dlls;
+#elif (defined(__gnu_linux__) || defined(__linux__))
+vector<void*> g_dlls;
 #endif
 	
 }
@@ -68,34 +72,40 @@ bool addDll(const string& path) {
 	bool result = false;
 #ifdef _WIN32
 	const auto hDll = LoadLibraryA(path.c_str());
+#elif (defined(__gnu_linux__) || defined(__linux__))
+	const auto hDll = dlopen(path.c_str(), RTLD_LAZY);
+#endif
 	if (hDll != lia_NULLPTR) {
-		g_Dlls.push_back(hDll);
+		g_dlls.push_back(hDll);
 		result = true;
 	}
-#endif
 	return result;
 }
 
 void unloadAllDlls() {
+	for (auto dll: g_dlls) {
 #ifdef _WIN32
-	for (auto dll: g_Dlls) {
-		FreeLibrary(dll);
-	}
-	g_Dlls.clear();
+		(void)FreeLibrary(dll);
+#elif (defined(__gnu_linux__) || defined(__linux__))
+		(void)dlclose(dll);
 #endif
+	}
+	g_dlls.clear();
 }
 
 vector<FunctionPointer> getDllFunctions(const string& functionName) {
 	vector<FunctionPointer> result;
-	result.reserve(g_Dlls.size());
+	result.reserve(g_dlls.size());
+	for (auto dll: g_dlls) {
 #ifdef _WIN32
-	for (auto dll: g_Dlls) {
 		const auto proc = GetProcAddress(dll, functionName.c_str());
+#elif (defined(__gnu_linux__) || defined(__linux__))
+		const auto proc = dlsym(dll, functionName.c_str());
+#endif
 		if (proc != lia_NULLPTR) {
 			result.push_back((FunctionPointer)proc);
 		}
 	}
-#endif
 	return result;
 }
 

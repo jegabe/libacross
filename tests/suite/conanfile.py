@@ -58,7 +58,8 @@ class TestSuite(ConanFile):
 
 	def imports(self):
 		self.copy("*.dll", dst="bin", src="bin")
-		self.copy("*.a*", dst="bin", src="lib")
+		self.copy("*.a",   dst="bin", src="lib")
+		self.copy("*.so*", dst="bin", src="lib")
 		
 	def build(self): # this is not building a library, just tests
 		cmake = CMake(self)

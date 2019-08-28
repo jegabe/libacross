@@ -64,4 +64,4 @@ class TestDll(ConanFile):
 	def package(self):
 		self.copy("*.h", dst="include", src="src")
 		self.copy("*.dll", dst="bin", src="bin", keep_path=False)
-		self.copy("*.a*",  dst="lib", src="bin", keep_path=False)
+		self.copy("*.so*", dst="lib", src="lib", keep_path=False)
