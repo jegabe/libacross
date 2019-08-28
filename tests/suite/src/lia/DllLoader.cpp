@@ -49,19 +49,41 @@ THE SOFTWARE.
 	#define WIN32_LEAN_AND_MEAN
 	#define VC_EXTRALEAN
 	#include <Windows.h>
+	namespace {
+		typedef HMODULE dll_t;
+		typedef FARPROC symbol_t;
+		inline dll_t loadDll(const char* path) {
+			return LoadLibraryA(path);
+		}
+		inline void unloadDll(dll_t dll) {
+			(void)FreeLibrary(dll);
+		}
+		inline symbol_t resolveSymbol(dll_t dll, const char* name) {
+			return GetProcAddress(dll, name);
+		}
+	}
 #elif (defined(__gnu_linux__) || defined(__linux__))
 	#include <dlfcn.h>
+	namespace {
+		typedef void* dll_t;
+		typedef void* symbol_t;
+		inline dll_t loadDll(const char* path) {
+			return dlopen(path, RTLD_LAZY);
+		}
+		inline void unloadDll(dll_t dll) {
+			(void)dlclose(dll);
+		}
+		inline symbol_t resolveSymbol(dll_t dll, const char* name) {
+			return dlsym(dll, name);
+		}
+	}
 #endif
 
 using namespace std;
 
 namespace {
 
-#ifdef _WIN32
-vector<HMODULE> g_dlls;
-#elif (defined(__gnu_linux__) || defined(__linux__))
-vector<void*> g_dlls;
-#endif
+vector<dll_t> g_dlls;
 	
 }
 
@@ -70,11 +92,7 @@ namespace dll_loader {
 
 bool addDll(const string& path) {
 	bool result = false;
-#ifdef _WIN32
-	const auto hDll = LoadLibraryA(path.c_str());
-#elif (defined(__gnu_linux__) || defined(__linux__))
-	const auto hDll = dlopen(path.c_str(), RTLD_LAZY);
-#endif
+	const auto hDll = loadDll(path.c_str());
 	if (hDll != lia_NULLPTR) {
 		g_dlls.push_back(hDll);
 		result = true;
@@ -84,11 +102,7 @@ bool addDll(const string& path) {
 
 void unloadAllDlls() {
 	for (auto dll: g_dlls) {
-#ifdef _WIN32
-		(void)FreeLibrary(dll);
-#elif (defined(__gnu_linux__) || defined(__linux__))
-		(void)dlclose(dll);
-#endif
+		unloadDll(dll);
 	}
 	g_dlls.clear();
 }
@@ -97,11 +111,7 @@ vector<FunctionPointer> getDllFunctions(const string& functionName) {
 	vector<FunctionPointer> result;
 	result.reserve(g_dlls.size());
 	for (auto dll: g_dlls) {
-#ifdef _WIN32
-		const auto proc = GetProcAddress(dll, functionName.c_str());
-#elif (defined(__gnu_linux__) || defined(__linux__))
-		const auto proc = dlsym(dll, functionName.c_str());
-#endif
+		const auto proc = resolveSymbol(dll, functionName.c_str());
 		if (proc != lia_NULLPTR) {
 			result.push_back((FunctionPointer)proc);
 		}
