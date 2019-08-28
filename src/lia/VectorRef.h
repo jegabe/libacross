@@ -86,7 +86,7 @@ public:
 		return abi_true;
 	}
 
-	virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer pElem) lia_NOEXCEPT lia_OVERRIDE {
+	virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) lia_NOEXCEPT lia_OVERRIDE {
 		const std::size_t i = static_cast<std::size_t>(idx);
 		lia_TRY
 			if (i <= m_vector.size()) {

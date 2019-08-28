@@ -60,13 +60,13 @@ class VectorRef;
 
 namespace detail {
 
-#define lia_VectorProxy_BASE VectorApiMixin<T, \
-                                            VectorProxy<T>, \
-                                            typename MakeTypes<T>::Reference, \
-                                            typename MakeTypes<T>::Pointer, \
-                                            typename MakeTypes<T>::ConstReference, \
-                                            typename MakeTypes<T>::ConstPointer \
-                                           >
+#define lia_VectorProxy_BASE(T) VectorApiMixin<T, \
+                                               VectorProxy<T>, \
+                                               typename MakeTypes<T>::Reference, \
+                                               typename MakeTypes<T>::Pointer, \
+                                               typename MakeTypes<T>::ConstReference, \
+                                               typename MakeTypes<T>::ConstPointer \
+                                              >
 
 // Helper to transport any IVector<T> derivate (let's call it TClass)
 // over ABI/DLL borders
@@ -84,7 +84,7 @@ namespace detail {
 // This is a helper class, so don't use it directly but only over functions that generate instances
 // of it.
 template<typename T>
-class VectorProxy: public lia_VectorProxy_BASE {
+class VectorProxy: public lia_VectorProxy_BASE(T) {
 public:
 
 	VectorProxy<T>* operator->() const lia_NOEXCEPT {
@@ -129,7 +129,7 @@ public:
 
 private:
 
-	typedef lia_VectorProxy_BASE ApiBase;
+	typedef lia_VectorProxy_BASE(T) ApiBase;
 
 	union Data {
 		memalign_t alignmentDummy;

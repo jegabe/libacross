@@ -123,7 +123,7 @@ public:
 	/* vtable index  1 */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
 	/* vtable index  2 */ virtual void lia_CALL abiClear() lia_NOEXCEPT = 0;
 	/* vtable index  3 */ virtual abi_bool_t lia_CALL abiReserve(abi_size_t n) lia_NOEXCEPT = 0;
-	/* vtable index  4 */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer pElem) lia_NOEXCEPT = 0;
+	/* vtable index  4 */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  5 */ virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx) lia_NOEXCEPT = 0;
 	/* vtable index  6 */ virtual abi_size_t lia_CALL abiGetSize() const lia_NOEXCEPT = 0;
 	/* vtable index  7 */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;

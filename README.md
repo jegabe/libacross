@@ -39,7 +39,7 @@ THE SOFTWARE.
 libacross is a C++ header-only library that enables passing Standard C++ (usually called "STL") containers over
 DLL (used as synonym to "shared library", since it is not restricted to Windows only) and other boundaries that require a stable ABI. DLLs built with different tool chains in different configurations (Debug vs. Release for example,
 or libstdc++ vs. libstdc++11 with gcc)
-become interoperable with each other, which makes creation of C++ plug-ins or dynamic libraries that use C++ featurs a lot easier.
+become interoperable with each other, which makes creation of C++ plug-ins or dynamic libraries that use C++ features a lot easier.
 
 The C++ ABI, especially when it comes to C++ standard containers, differs much for each compiler vendor and configuration. That means, for example, if
 you build your main application with mingw in release mode and use a Dll which is compiled with visual studio in debug mode, and use a

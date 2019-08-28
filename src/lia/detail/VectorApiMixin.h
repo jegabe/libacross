@@ -204,7 +204,7 @@ private:
 	}
 };
 
-lia_STATIC_ASSERT(sizeof(VectorApiMixin<int, int, int&, int*, const int&, const int*>) == 1u, "API class is not allowed to contain any virtual functions");
+lia_STATIC_ASSERT(sizeof(VectorApiMixin<int, int, int&, int*, const int&, const int*>) == 1u, "API class is not allowed to contain any virtual functions")
 
 }
 }

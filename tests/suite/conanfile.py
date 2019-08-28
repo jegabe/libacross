@@ -51,7 +51,7 @@ class TestSuite(ConanFile):
 	license = "MIT"
 	description = "See README.md"
 	settings = "os", "compiler", "build_type", "arch"
-	requires = "libacross/0.1.0@jegabe/develop", "libacross_test_dll/0.1.0@jegabe/develop", "gtest/1.8.0@conan/stable"
+	requires = "libacross/0.1.0@jegabe/develop", "libacross_test_dll/0.1.0@jegabe/develop", "gtest/1.8.1@bincrafters/stable"
 	exports_sources = "src/*", "CMakeLists.txt", "conanfile.py"
 	generators = "cmake"
 	no_copy_source = True
