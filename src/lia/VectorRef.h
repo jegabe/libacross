@@ -86,8 +86,8 @@ public:
 		m_iter += static_cast<std::ptrdiff_t>(n);
 	}
 
-	virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) const lia_NOEXCEPT lia_OVERRIDE {
-		lia::detail::assignElemPtr(pElem, *m_iter);
+	virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem, abi_ptrdiff_t i) const lia_NOEXCEPT lia_OVERRIDE {
+		lia::detail::assignElemPtr(pElem, m_iter[static_cast<std::ptrdiff_t>(i)]);
 	}
 
 private:

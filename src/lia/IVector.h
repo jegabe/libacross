@@ -51,8 +51,6 @@ THE SOFTWARE.
 
 #ifdef __cplusplus
 
-#include <new>     // for placement new
-
 namespace lia {
 
 template<typename T>
@@ -98,9 +96,7 @@ struct MakeTypes< IVector<const T> > {
 #define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
                                                                         lia::IVectorIterator<T>, \
                                                                         typename lia::detail::MakeTypes<T>::Reference, \
-                                                                        typename lia::detail::MakeTypes<T>::Pointer, \
-                                                                        typename lia::detail::MakeTypes<T>::ConstReference, \
-                                                                        typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                        typename lia::detail::MakeTypes<T>::Pointer \
                                                                        >
 
 
@@ -124,7 +120,7 @@ public:
 	/* vtable index  2 */ virtual void lia_CALL abiFinalize() lia_NOEXCEPT = 0;
 	/* vtable index  3 */ virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
 	/* vtable index  4 */ virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
-	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) const lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem, abi_ptrdiff_t i) const lia_NOEXCEPT = 0;
 private:
 
 	typedef lia_IVectorIterator_BASE(T) ApiBase;
@@ -135,9 +131,7 @@ private:
 #define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
                                                                              lia::VectorIteratorHandle<T>, \
                                                                              typename lia::detail::MakeTypes<T>::Reference, \
-                                                                             typename lia::detail::MakeTypes<T>::Pointer, \
-                                                                             typename lia::detail::MakeTypes<T>::ConstReference, \
-                                                                             typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                             typename lia::detail::MakeTypes<T>::Pointer \
                                                                             >
 
 template<typename T>
@@ -147,15 +141,11 @@ public:
 
 	typedef VectorIteratorHandle<T> ThisType;
 
-	ThisType* operator->() const lia_NOEXCEPT {
-		return this;
-	}
-
-	const IVectorIterator<T>& getAbi() lia_NOEXCEPT {
+	const IVectorIterator<T>& getAbi() const lia_NOEXCEPT {
 		return *reinterpret_cast<const IVectorIterator<T>*>(m_buf.data);
 	}
 
-	IVectorIterator<T>& getAbi() const lia_NOEXCEPT {
+	IVectorIterator<T>& getAbi() lia_NOEXCEPT {
 		return *reinterpret_cast<IVectorIterator<T>*>(m_buf.data);
 	}
 

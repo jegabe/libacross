@@ -61,11 +61,77 @@ namespace detail {
 template<typename T,
          typename TSubClass,
          typename TReference,
-         typename TPointer,
-         typename TConstReference,
-         typename TConstPointer>
+         typename TPointer>
 class VectorIteratorApiMixin {
 public:
+
+	TReference operator*() const {
+		TPointer pElem;
+		lia_ABI.abiDereference(pElem, 0);
+		return derefElemPtr(pElem);
+	}
+
+	TPointer operator->() const {
+		TPointer pElem;
+		lia_ABI.abiDereference(pElem, 0);
+		return pElem;
+	}
+
+	TReference operator[](std::ptrdiff_t i) const {
+		TPointer pElem;
+		lia_ABI.abiDereference(pElem, static_cast<abi_ptrdiff_t>(i));
+		return derefElemPtr(pElem);
+	}
+
+	TSubClass& operator++() {
+		lia_ABI.abiAdvance(1);
+		return downCast();
+	}
+
+	TSubClass& operator--() {
+		lia_ABI.abiAdvance(-1);
+		return downCast();
+	}
+
+	TSubClass operator++(int) {
+		TSubClass result = downCast();
+		lia_ABI.abiAdvance(1);
+		return result;
+	}
+
+	TSubClass operator--(int) {
+		TSubClass result = downCast();
+		lia_ABI.abiAdvance(-1);
+		return result;
+	}
+
+	TSubClass operator+(std::ptrdiff_t i) {
+		TSubClass result = downCast();
+		result.getAbi().abiAdvance(static_cast<abi_ptrdiff_t>(i));
+		return result;
+	}
+
+	TSubClass operator-(std::ptrdiff_t i) {
+		TSubClass result = downCast();
+		result.getAbi().abiAdvance(static_cast<abi_ptrdiff_t>(-i));
+		return result;
+	}
+
+	std::ptrdiff_t operator-(const TSubClass& other) const {
+		const std::ptrdiff_t result = lia_ABI.abiGetDistance(other.getAbi());
+		return result;
+	}
+
+	TSubClass& operator+=(std::ptrdiff_t i) {
+		lia_ABI.abiAdvance(static_cast<abi_ptrdiff_t>(i));
+		return downCast();
+	}
+
+	TSubClass& operator-=(std::ptrdiff_t i) {
+		lia_ABI.abiAdvance(static_cast<abi_ptrdiff_t>(-i));
+		return downCast();
+	}
+
 private:
 
 	TSubClass& downCast() lia_NOEXCEPT {
@@ -77,6 +143,8 @@ private:
 	}
 };
 
+lia_STATIC_ASSERT(sizeof(VectorIteratorApiMixin<int, int, int&, int*>) == 1u, "API class is not allowed to contain any virtual functions")
+
 // Mix-in class for adding public std::vector compatible API into sub-class.
 // The class TSubClass that derives from this mixin is required to implement
 // a public function getAbi() that returns a reference to some type that's
@@ -87,10 +155,9 @@ template<typename T,
          typename TPointer,
          typename TConstReference,
          typename TConstPointer,
-		 typename TIterator,
-		 typename TConstIterator>
+         typename TIterator,
+         typename TConstIterator>
 class VectorApiMixin {
-
 public:
 
 	template<typename U, typename V>
@@ -201,14 +268,14 @@ public:
 
 	TIterator begin() {
 		TIterator iter;
-		lia_ABI.abiConstructIterator(abi_true, abi_false, iter.getBuffer());
+		lia_ABI.abiConstructIterator(abi_true, iter.getBuffer());
 		iter.setConstructed();
 		return iter;
 	}
 
 	TConstIterator begin() const {
 		TConstIterator iter;
-		lia_ABI.abiConstructIterator(abi_true, abi_true, iter.getBuffer());
+		lia_ABI.abiConstructConstIterator(abi_false, iter.getBuffer());
 		iter.setConstructed();
 		return iter;
 	}
