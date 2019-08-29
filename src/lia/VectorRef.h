@@ -69,7 +69,7 @@ public:
 		v.minor = 1;
 	}
 
-	virtual void lia_CALL abiCloneTo(void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
+	virtual void lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
 		new(pBuf) ThisType(m_iter);
 	}
 
@@ -86,11 +86,7 @@ public:
 		m_iter += static_cast<std::ptrdiff_t>(n);
 	}
 
-	virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT lia_OVERRIDE {
-		lia::detail::assignElemPtr(pElem, *m_iter);
-	}
-
-	virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT lia_OVERRIDE {
+	virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) const lia_NOEXCEPT lia_OVERRIDE {
 		lia::detail::assignElemPtr(pElem, *m_iter);
 	}
 
@@ -178,10 +174,14 @@ public:
 		return abi_false;
 	}
 
-	virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
+	virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
 		typedef typename lia::RemoveReference<TVector>::type::iterator TIterator;
-		ThisType& rThis = const_cast<ThisType&>(*this);
-		new (pBuf) VectorIteratorRef<T, TIterator>(atBegin ? rThis.m_vector.begin() : rThis.m_vector.end());
+		new (pBuf) VectorIteratorRef<T, TIterator>(atBegin ? m_vector.begin() : m_vector.end());
+	}
+
+	virtual void lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
+		typedef typename lia::RemoveReference<TVector>::type::const_iterator TIterator;
+		new (pBuf) VectorIteratorRef<const T, TIterator>(atBegin ? m_vector.begin() : m_vector.end());
 	}
 
 private:

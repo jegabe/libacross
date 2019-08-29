@@ -58,7 +58,7 @@ namespace lia {
 template<typename T>
 class IVectorIterator;
 
-template<bool kIsConstIterator, typename T>
+template<typename T>
 class VectorIteratorHandle;
 
 template<typename T>
@@ -78,6 +78,14 @@ struct MakeTypes< IVector<T> > {
 };
 
 template<typename T>
+struct MakeTypes< const IVector<T> > {
+	typedef VectorProxy<const T> Reference;
+	typedef VectorProxy<const T> Pointer;
+	typedef VectorProxy<const T> ConstReference;
+	typedef VectorProxy<const T> ConstPointer;
+};
+
+template<typename T>
 struct MakeTypes< IVector<const T> > {
 	typedef VectorProxy<const T> Reference;
 	typedef VectorProxy<const T> Pointer;
@@ -87,8 +95,7 @@ struct MakeTypes< IVector<const T> > {
 
 }
 
-#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<false, \
-                                                                        T, \
+#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
                                                                         lia::IVectorIterator<T>, \
                                                                         typename lia::detail::MakeTypes<T>::Reference, \
                                                                         typename lia::detail::MakeTypes<T>::Pointer, \
@@ -113,12 +120,11 @@ public:
 	}
 
 	/* vtable index  0 */ virtual void lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
-	/* vtable index  1 */ virtual void lia_CALL abiCloneTo(void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  1 */ virtual void lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT = 0;
 	/* vtable index  2 */ virtual void lia_CALL abiFinalize() lia_NOEXCEPT = 0;
 	/* vtable index  3 */ virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
 	/* vtable index  4 */ virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
-	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
-	/* vtable index  6 */ virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) const lia_NOEXCEPT = 0;
 private:
 
 	typedef lia_IVectorIterator_BASE(T) ApiBase;
@@ -126,41 +132,38 @@ private:
 
 #undef lia_IVectorIterator_BASE
 
-#define lia_VectorIteratorHandle_BASE(kIsConstIterator, T) lia::detail::VectorIteratorApiMixin<kIsConstIterator, \
-                                                                                               T, \
-                                                                                               lia::VectorIteratorHandle<kIsConstIterator, T>, \
-                                                                                               typename lia::detail::MakeTypes<T>::Reference, \
-                                                                                               typename lia::detail::MakeTypes<T>::Pointer, \
-                                                                                               typename lia::detail::MakeTypes<T>::ConstReference, \
-                                                                                               typename lia::detail::MakeTypes<T>::ConstPointer \
-                                                                                              >
+#define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
+                                                                             lia::VectorIteratorHandle<T>, \
+                                                                             typename lia::detail::MakeTypes<T>::Reference, \
+                                                                             typename lia::detail::MakeTypes<T>::Pointer, \
+                                                                             typename lia::detail::MakeTypes<T>::ConstReference, \
+                                                                             typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                            >
 
-template<bool kIsConstIterator, typename T>
-class VectorIteratorHandle: public lia_VectorIteratorHandle_BASE(kIsConstIterator, T)
+template<typename T>
+class VectorIteratorHandle: public lia_VectorIteratorHandle_BASE(T)
 {
 public:
 
-	typedef VectorIteratorHandle<kIsConstIterator, T> ThisType;
-	typedef typename lia::IfThenElse<kIsConstIterator, Illegal, IVectorIterator<T> >::type NonConstInterface;
-	typedef const IVectorIterator<T> ConstInterface;
+	typedef VectorIteratorHandle<T> ThisType;
 
 	ThisType* operator->() const lia_NOEXCEPT {
 		return this;
 	}
 
-	NonConstInterface& getAbi() lia_NOEXCEPT {
-		return *reinterpret_cast<NonConstInterface*>(m_buf.data);
+	const IVectorIterator<T>& getAbi() lia_NOEXCEPT {
+		return *reinterpret_cast<const IVectorIterator<T>*>(m_buf.data);
 	}
 
-	ConstInterface& getAbi() const lia_NOEXCEPT {
-		return *reinterpret_cast<ConstInterface*>(m_buf.data);
+	IVectorIterator<T>& getAbi() const lia_NOEXCEPT {
+		return *reinterpret_cast<IVectorIterator<T>*>(m_buf.data);
 	}
 
-	operator NonConstInterface&() lia_NOEXCEPT {
+	operator const IVectorIterator<T>&() const lia_NOEXCEPT {
 		return getAbi();
 	}
 
-	operator ConstInterface&() const lia_NOEXCEPT {
+	operator IVectorIterator<T>&() lia_NOEXCEPT {
 		return getAbi();
 	}
 
@@ -221,8 +224,8 @@ private:
                                                         typename lia::detail::MakeTypes<T>::Pointer, \
                                                         typename lia::detail::MakeTypes<T>::ConstReference, \
                                                         typename lia::detail::MakeTypes<T>::ConstPointer, \
-                                                        VectorIteratorHandle<false, T>, \
-                                                        VectorIteratorHandle<true, T> \
+                                                        VectorIteratorHandle<T>, \
+                                                        VectorIteratorHandle<const T> \
                                                        >
 
 //! Interface version history:
@@ -266,7 +269,8 @@ public:
 	/* vtable index  6  */ virtual abi_size_t lia_CALL abiGetSize() const lia_NOEXCEPT = 0;
 	/* vtable index  7  */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  8  */ virtual abi_bool_t lia_CALL abiGetAtConst(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
-	/* vtable index  9  */ virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT = 0;
+	/* vtable index  9  */ virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  10 */ virtual void lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT = 0;
 
 private:
 

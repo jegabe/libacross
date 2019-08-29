@@ -58,8 +58,7 @@ THE SOFTWARE.
 namespace lia {
 namespace detail {
 
-template<bool kIsConstIterator,
-         typename T,
+template<typename T,
          typename TSubClass,
          typename TReference,
          typename TPointer,

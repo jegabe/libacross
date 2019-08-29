@@ -66,8 +66,8 @@ namespace detail {
                                                typename MakeTypes<T>::Pointer, \
                                                typename MakeTypes<T>::ConstReference, \
                                                typename MakeTypes<T>::ConstPointer, \
-                                               VectorIteratorHandle<false, T>, \
-                                               VectorIteratorHandle<true, T> \
+                                               VectorIteratorHandle<T>, \
+                                               VectorIteratorHandle<const T> \
                                               >
 
 // Helper to transport any IVector<T> derivate (let's call it TClass)

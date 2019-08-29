@@ -394,6 +394,24 @@ struct IfThenElse<false, Then, Else>
 	typedef Else type;
 };
 
+template<typename T>
+struct IsConst
+{
+	static const bool value = false;
+};
+
+template<typename T>
+struct IsConst<const T>
+{
+	static const bool value = true;
+};
+
+template<typename T>
+struct IsConst<const T&>
+{
+	static const bool value = true;
+};
+
 }
 
 #else /* C compiler */
