@@ -93,7 +93,8 @@ struct MakeTypes< IVector<const T> > {
 
 }
 
-#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
+#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<true, \
+                                                                        T, \
                                                                         lia::IVectorIterator<T>, \
                                                                         typename lia::detail::MakeTypes<T>::Reference, \
                                                                         typename lia::detail::MakeTypes<T>::Pointer \
@@ -128,7 +129,8 @@ private:
 
 #undef lia_IVectorIterator_BASE
 
-#define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
+#define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<false, \
+                                                                             T, \
                                                                              lia::VectorIteratorHandle<T>, \
                                                                              typename lia::detail::MakeTypes<T>::Reference, \
                                                                              typename lia::detail::MakeTypes<T>::Pointer \

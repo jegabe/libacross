@@ -58,7 +58,8 @@ THE SOFTWARE.
 namespace lia {
 namespace detail {
 
-template<typename T,
+template<bool kIsSubClassInterface,
+         typename T,
          typename TSubClass,
          typename TReference,
          typename TPointer>
@@ -93,26 +94,30 @@ public:
 		return downCast();
 	}
 
-	TSubClass operator++(int) {
-		TSubClass result = downCast();
+	template<typename TSub = typename lia::EnableIf<!kIsSubClassInterface, TSubClass>::type>
+	TSub operator++(int) {
+		TSub result = downCast();
 		lia_ABI.abiAdvance(1);
 		return result;
 	}
 
-	TSubClass operator--(int) {
-		TSubClass result = downCast();
+	template<typename TSub = typename lia::EnableIf<!kIsSubClassInterface, TSubClass>::type>
+	TSub operator--(int) {
+		TSub result = downCast();
 		lia_ABI.abiAdvance(-1);
 		return result;
 	}
 
-	TSubClass operator+(std::ptrdiff_t i) {
-		TSubClass result = downCast();
+	template<typename TSub = typename lia::EnableIf<!kIsSubClassInterface, TSubClass>::type>
+	TSub operator+(std::ptrdiff_t i) {
+		TSub result = downCast();
 		result.getAbi().abiAdvance(static_cast<abi_ptrdiff_t>(i));
 		return result;
 	}
 
-	TSubClass operator-(std::ptrdiff_t i) {
-		TSubClass result = downCast();
+	template<typename TSub = typename lia::EnableIf<!kIsSubClassInterface, TSubClass>::type>
+	TSub operator-(std::ptrdiff_t i) {
+		TSub result = downCast();
 		result.getAbi().abiAdvance(static_cast<abi_ptrdiff_t>(-i));
 		return result;
 	}
@@ -143,7 +148,7 @@ private:
 	}
 };
 
-lia_STATIC_ASSERT(sizeof(VectorIteratorApiMixin<int, int, int&, int*>) == 1u, "API class is not allowed to contain any virtual functions")
+lia_STATIC_ASSERT(sizeof(VectorIteratorApiMixin<true, int, int, int&, int*>) == 1u, "API class is not allowed to contain any virtual functions")
 
 // Mix-in class for adding public std::vector compatible API into sub-class.
 // The class TSubClass that derives from this mixin is required to implement

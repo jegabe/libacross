@@ -380,36 +380,12 @@ struct RemoveReference<const T&>
 	typedef T type;
 };
 
-struct Illegal {};
+template<bool b, class T=void>
+struct EnableIf;
 
-template<bool b, typename Then, typename Else>
-struct IfThenElse
-{
-	typedef Then type;
-};
-
-template<typename Then, typename Else>
-struct IfThenElse<false, Then, Else>
-{
-	typedef Else type;
-};
-
-template<typename T>
-struct IsConst
-{
-	static const bool value = false;
-};
-
-template<typename T>
-struct IsConst<const T>
-{
-	static const bool value = true;
-};
-
-template<typename T>
-struct IsConst<const T&>
-{
-	static const bool value = true;
+template<class T>
+struct EnableIf<true, T> {
+	typedef T type;
 };
 
 }
