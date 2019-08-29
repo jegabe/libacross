@@ -256,7 +256,7 @@ const abi_bool_t abi_false = false;
 namespace detail {
 
 const std::size_t kProxySize       = sizeof(void*)*4u;
-const std::size_t kIteratorBufSize = sizeof(void*)*8u;
+const std::size_t kIteratorBufSize = sizeof(void*)*10u;
 
 template<typename T>
 T& derefElemPtr(T* ptr) {
@@ -378,6 +378,20 @@ template<typename T>
 struct RemoveReference<const T&>
 {
 	typedef T type;
+};
+
+struct Illegal {};
+
+template<bool b, typename Then, typename Else>
+struct IfThenElse
+{
+	typedef Then type;
+};
+
+template<typename Then, typename Else>
+struct IfThenElse<false, Then, Else>
+{
+	typedef Else type;
 };
 
 }

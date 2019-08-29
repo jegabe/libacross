@@ -50,6 +50,14 @@ THE SOFTWARE.
 #include <lia/IBasicString.h>
 #include <lia/BasicStringRef.h>
 
+using namespace lia;
+
 int main() {
+	// instantiation of templates to check if it compiles...
+	VectorRef<int32_t, std::vector<int32_t> > v0;
+	(void) v0;
+	VectorRef<IVector<int32_t>, std::vector< std::vector<int32_t> > > v1;
+	(void) v1;
+
 	return 0;
 }

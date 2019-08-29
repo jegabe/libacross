@@ -58,32 +58,14 @@ THE SOFTWARE.
 namespace lia {
 namespace detail {
 
-template<typename T,
+template<bool kIsConstIterator,
+         typename T,
          typename TSubClass,
          typename TReference,
          typename TPointer,
          typename TConstReference,
          typename TConstPointer>
 class VectorIteratorApiMixin {
-public:
-private:
-
-	TSubClass& downCast() lia_NOEXCEPT {
-		return static_cast<TSubClass&>(*this);
-	}
-
-	const TSubClass& downCast() const lia_NOEXCEPT {
-		return static_cast<const TSubClass&>(*this);
-	}
-};
-
-template<typename T,
-         typename TSubClass,
-         typename TReference,
-         typename TPointer,
-         typename TConstReference,
-         typename TConstPointer>
-class VectorConstIteratorApiMixin {
 public:
 private:
 
@@ -220,14 +202,14 @@ public:
 
 	TIterator begin() {
 		TIterator iter;
-		lia_ABI.abiConstructIterator(abi_true, iter.getBuffer());
+		lia_ABI.abiConstructIterator(abi_true, abi_false, iter.getBuffer());
 		iter.setConstructed();
 		return iter;
 	}
 
 	TConstIterator begin() const {
 		TConstIterator iter;
-		lia_ABI.abiConstructConstIterator(abi_true, iter.getBuffer());
+		lia_ABI.abiConstructIterator(abi_true, abi_true, iter.getBuffer());
 		iter.setConstructed();
 		return iter;
 	}
