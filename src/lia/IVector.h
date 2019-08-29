@@ -238,6 +238,9 @@ template<typename T>
 class IVector: public lia_IVector_BASE(T) {
 public:
 
+  lia_STATIC_ASSERT((!lia::IsSame<T, bool>::value),       "No std::vector<bool> support until now. Will follow in a future revision.")
+  lia_STATIC_ASSERT((!lia::IsSame<T, const bool>::value), "No std::vector<bool> support until now. Will follow in a future revision.")
+
 	typedef IVector<T> ThisType;
 
 	void operator delete(void* p) {
