@@ -58,6 +58,44 @@ THE SOFTWARE.
 namespace lia {
 namespace detail {
 
+template<typename T,
+         typename TSubClass,
+         typename TReference,
+         typename TPointer,
+         typename TConstReference,
+         typename TConstPointer>
+class VectorIteratorApiMixin {
+public:
+private:
+
+	TSubClass& downCast() lia_NOEXCEPT {
+		return static_cast<TSubClass&>(*this);
+	}
+
+	const TSubClass& downCast() const lia_NOEXCEPT {
+		return static_cast<const TSubClass&>(*this);
+	}
+};
+
+template<typename T,
+         typename TSubClass,
+         typename TReference,
+         typename TPointer,
+         typename TConstReference,
+         typename TConstPointer>
+class VectorConstIteratorApiMixin {
+public:
+private:
+
+	TSubClass& downCast() lia_NOEXCEPT {
+		return static_cast<TSubClass&>(*this);
+	}
+
+	const TSubClass& downCast() const lia_NOEXCEPT {
+		return static_cast<const TSubClass&>(*this);
+	}
+};
+
 // Mix-in class for adding public std::vector compatible API into sub-class.
 // The class TSubClass that derives from this mixin is required to implement
 // a public function getAbi() that returns a reference to some type that's
@@ -67,7 +105,9 @@ template<typename T,
          typename TReference,
          typename TPointer,
          typename TConstReference,
-         typename TConstPointer>
+         typename TConstPointer,
+		 typename TIterator,
+		 typename TConstIterator>
 class VectorApiMixin {
 
 public:
@@ -178,6 +218,20 @@ public:
 		return derefElemPtr(pElem);
 	}
 
+	TIterator begin() {
+		TIterator iter;
+		lia_ABI.abiConstructIterator(abi_true, iter.getBuffer());
+		iter.setConstructed();
+		return iter;
+	}
+
+	TConstIterator begin() const {
+		TConstIterator iter;
+		lia_ABI.abiConstructConstIterator(abi_true, iter.getBuffer());
+		iter.setConstructed();
+		return iter;
+	}
+
 	bool empty() const lia_NOEXCEPT {
 		return (lia_ABI.abiGetSize() == 0);
 	}
@@ -204,7 +258,7 @@ private:
 	}
 };
 
-lia_STATIC_ASSERT(sizeof(VectorApiMixin<int, int, int&, int*, const int&, const int*>) == 1u, "API class is not allowed to contain any virtual functions")
+lia_STATIC_ASSERT(sizeof(VectorApiMixin<int, int, int&, int*, const int&, const int*, int, const int>) == 1u, "API class is not allowed to contain any virtual functions")
 
 }
 }

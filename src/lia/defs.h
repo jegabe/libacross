@@ -255,7 +255,8 @@ const abi_bool_t abi_false = false;
 
 namespace detail {
 
-const std::size_t kProxySize = sizeof(void*)*4u;
+const std::size_t kProxySize       = sizeof(void*)*4u;
+const std::size_t kIteratorBufSize = sizeof(void*)*8u;
 
 template<typename T>
 T& derefElemPtr(T* ptr) {
@@ -359,6 +360,24 @@ struct IsSame {
 template<typename T>
 struct IsSame<T, T> {
   static const bool value = true;
+};
+
+template<typename T>
+struct RemoveReference
+{
+	typedef T type;
+};
+
+template<typename T>
+struct RemoveReference<T&>
+{
+	typedef T type;
+};
+
+template<typename T>
+struct RemoveReference<const T&>
+{
+	typedef T type;
 };
 
 }

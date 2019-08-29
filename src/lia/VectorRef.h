@@ -54,6 +54,90 @@ THE SOFTWARE.
 
 namespace lia {
 
+template<typename T, typename TIterator>
+class VectorIteratorRef lia_FINAL: public IVectorIterator<T> {
+public:
+
+	typedef VectorIteratorRef<T, TIterator> ThisType;
+
+	VectorIteratorRef() lia_NOEXCEPT {}
+	explicit VectorIteratorRef(const TIterator& i) lia_NOEXCEPT :m_iter(i) {}
+	virtual ~VectorIteratorRef() lia_NOEXCEPT {}
+
+	virtual void lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT lia_OVERRIDE {
+		v.major = 0;
+		v.minor = 1;
+	}
+
+	virtual void lia_CALL abiCloneTo(void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
+		new(pBuf) ThisType(m_iter);
+	}
+
+	virtual void lia_CALL abiFinalize() lia_NOEXCEPT lia_OVERRIDE {
+		m_iter.~TIterator();
+	}
+
+	virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other_) const lia_NOEXCEPT lia_OVERRIDE {
+		const ThisType& other = static_cast<const ThisType&>(other_);
+		return static_cast<abi_ptrdiff_t>(m_iter - other.m_iter);
+	}
+
+	virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT lia_OVERRIDE {
+		m_iter += static_cast<std::ptrdiff_t>(n);
+	}
+
+	virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT lia_OVERRIDE {
+		lia::detail::assignElemPtr(pElem, *m_iter);
+	}
+
+	virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT lia_OVERRIDE {
+		lia::detail::assignElemPtr(pElem, *m_iter);
+	}
+
+private:
+	TIterator m_iter;
+};
+
+template<typename T, typename TIterator>
+class VectorConstIteratorRef lia_FINAL: public IVectorConstIterator<T> {
+public:
+
+	typedef VectorConstIteratorRef<T, TIterator> ThisType;
+
+	VectorConstIteratorRef() lia_NOEXCEPT {}
+	explicit VectorConstIteratorRef(const TIterator& i) lia_NOEXCEPT :m_iter(i) {}
+	virtual ~VectorConstIteratorRef() lia_NOEXCEPT {}
+
+	virtual void lia_CALL abiGetIVectorConstIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT lia_OVERRIDE {
+		v.major = 0;
+		v.minor = 1;
+	}
+
+	virtual void lia_CALL abiCloneTo(void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
+		new(pBuf) ThisType(m_iter);
+	}
+
+	virtual void lia_CALL abiFinalize() lia_NOEXCEPT lia_OVERRIDE {
+		m_iter.~TIterator();
+	}
+
+	virtual abi_ptrdiff_t abiGetDistance(const IVectorConstIterator<T>& other_) const lia_NOEXCEPT lia_OVERRIDE {
+		const ThisType& other = static_cast<const ThisType&>(other_);
+		return static_cast<abi_ptrdiff_t>(m_iter - other.m_iter);
+	}
+
+	virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT lia_OVERRIDE {
+		m_iter += static_cast<std::ptrdiff_t>(n);
+	}
+
+	virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT lia_OVERRIDE {
+		lia::detail::assignElemPtr(pElem, *m_iter);
+	}
+
+private:
+	TIterator m_iter;
+};
+
 template<typename T, typename TVector>
 class VectorRef lia_FINAL: public IVector<T> {
 public:
@@ -130,6 +214,16 @@ public:
 			return abi_true;
 		}
 		return abi_false;
+	}
+
+	virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
+		typedef typename lia::RemoveReference<TVector>::type::iterator TIterator;
+		new (pBuf) VectorIteratorRef<T, TIterator>(atBegin ? m_vector.begin() : m_vector.end());
+	}
+
+	virtual void lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
+		typedef typename lia::RemoveReference<TVector>::type::const_iterator TIterator;
+		new (pBuf) VectorConstIteratorRef<T, TIterator>(atBegin ? m_vector.begin() : m_vector.end());
 	}
 
 private:

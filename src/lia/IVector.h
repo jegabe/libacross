@@ -51,7 +51,21 @@ THE SOFTWARE.
 
 #ifdef __cplusplus
 
+#include <new>     // for placement new
+
 namespace lia {
+
+template<typename T>
+class IVectorIterator;
+
+template<typename T>
+class IVectorConstIterator;
+
+template<typename T>
+class VectorIteratorHandle;
+
+template<typename T>
+class VectorConstIteratorHandle;
 
 template<typename T>
 class IVector;
@@ -79,12 +93,257 @@ struct MakeTypes< IVector<const T> > {
 
 }
 
+#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
+                                                                        lia::IVectorIterator<T>, \
+                                                                        typename lia::detail::MakeTypes<T>::Reference, \
+                                                                        typename lia::detail::MakeTypes<T>::Pointer, \
+                                                                        typename lia::detail::MakeTypes<T>::ConstReference, \
+                                                                        typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                       >
+
+
+template<typename T>
+class IVectorIterator: public lia_IVectorIterator_BASE(T)
+{
+public:
+
+	typedef IVectorIterator<T> ThisType;
+
+	IVectorIterator& getAbi() lia_NOEXCEPT {
+		return *this;
+	}
+
+	const IVectorIterator& getAbi() const lia_NOEXCEPT {
+		return *this;
+	}
+
+	/* vtable index  0 */ virtual void lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
+	/* vtable index  1 */ virtual void lia_CALL abiCloneTo(void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  2 */ virtual void lia_CALL abiFinalize() lia_NOEXCEPT = 0;
+	/* vtable index  3 */ virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
+	/* vtable index  4 */ virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
+	/* vtable index  6 */ virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
+private:
+
+	typedef lia_IVectorIterator_BASE(T) ApiBase;
+};
+
+#undef lia_IVectorIterator_BASE
+
+#define lia_IVectorConstIterator_BASE(T) lia::detail::VectorConstIteratorApiMixin<T, \
+                                                                                  lia::IVectorConstIterator<T>, \
+                                                                                  typename lia::detail::MakeTypes<T>::Reference, \
+                                                                                  typename lia::detail::MakeTypes<T>::Pointer, \
+                                                                                  typename lia::detail::MakeTypes<T>::ConstReference, \
+                                                                                  typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                                 >
+
+
+template<typename T>
+class IVectorConstIterator: public lia_IVectorConstIterator_BASE(T)
+{
+public:
+
+	typedef IVectorConstIterator<T> ThisType;
+
+	IVectorConstIterator& getAbi() lia_NOEXCEPT {
+		return *this;
+	}
+
+	const IVectorConstIterator& getAbi() const lia_NOEXCEPT {
+		return *this;
+	}
+
+	/* vtable index  0 */ virtual void lia_CALL abiGetIVectorConstIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
+	/* vtable index  1 */ virtual void lia_CALL abiCloneTo(void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  2 */ virtual void lia_CALL abiFinalize() lia_NOEXCEPT = 0;
+	/* vtable index  3 */ virtual abi_ptrdiff_t abiGetDistance(const IVectorConstIterator<T>& other) const lia_NOEXCEPT = 0;
+	/* vtable index  4 */ virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
+private:
+
+	typedef lia_IVectorConstIterator_BASE(T) ApiBase;
+};
+
+#undef lia_IVectorConstIterator_BASE
+
+#define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
+                                                                             lia::VectorIteratorHandle<T>, \
+                                                                             typename lia::detail::MakeTypes<T>::Reference, \
+                                                                             typename lia::detail::MakeTypes<T>::Pointer, \
+                                                                             typename lia::detail::MakeTypes<T>::ConstReference, \
+                                                                             typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                            >
+
+template<typename T>
+class VectorIteratorHandle: public lia_VectorIteratorHandle_BASE(T)
+{
+public:
+
+	VectorIteratorHandle<T>* operator->() const lia_NOEXCEPT {
+		return this;
+	}
+
+	IVectorIterator<T>& getAbi() lia_NOEXCEPT {
+		return *reinterpret_cast<IVectorIterator<T>*>(m_buf.data);
+	}
+
+	const IVectorIterator<T>& getAbi() const lia_NOEXCEPT {
+		return *reinterpret_cast<const IVectorIterator<T>*>(m_buf.data);
+	}
+
+	operator IVectorIterator<T>&() lia_NOEXCEPT {
+		return getAbi();
+	}
+
+	operator const IVectorIterator<T>&() const lia_NOEXCEPT {
+		return getAbi();
+	}
+
+	VectorIteratorHandle(): m_isConstructed(false), reserved__() {}
+
+	VectorIteratorHandle(const VectorIteratorHandle& other): m_isConstructed(false), reserved__() {
+		if (other.m_isConstructed) {
+			other.getAbi().abiCloneTo(m_buf.data);
+			m_isConstructed = true;
+		}
+	}
+
+	VectorIteratorHandle& operator=(const VectorIteratorHandle& other) {
+		if (&other != this) {
+			detachImpl();
+			if (other.m_isConstructed) {
+				other.getAbi().abiCloneTo(m_buf.data);
+				m_isConstructed = true;
+			}
+		}
+		return *this;
+	}
+
+	~VectorIteratorHandle() {
+		detachImpl();
+	}
+
+	void* getBuffer() lia_NOEXCEPT {
+		return m_buf.data;
+	}
+
+	void setConstructed() lia_NOEXCEPT {
+		m_isConstructed = true;
+	}
+
+private:
+
+	void detachImpl() {
+		if (m_isConstructed) {
+			getAbi().abiFinalize();
+			m_isConstructed = false;
+		}
+	}
+
+	union Data {
+		memalign_t alignmentDummy;
+		char data[lia::detail::kIteratorBufSize];
+	} m_buf;
+	abi_bool_t m_isConstructed;
+	uint8_t reserved__[sizeof(void*)-1];
+};
+
+#undef lia_VectorIteratorHandle_BASE
+
+#define lia_VectorConstIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
+                                                                                  lia::VectorConstIteratorHandle<T>, \
+                                                                                  typename lia::detail::MakeTypes<T>::Reference, \
+                                                                                  typename lia::detail::MakeTypes<T>::Pointer, \
+                                                                                  typename lia::detail::MakeTypes<T>::ConstReference, \
+                                                                                  typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                                                 >
+
+template<typename T>
+class VectorConstIteratorHandle: public lia_VectorConstIteratorHandle_BASE(T)
+{
+public:
+
+	VectorConstIteratorHandle<T>* operator->() const lia_NOEXCEPT {
+		return this;
+	}
+
+	IVectorConstIterator<T>& getAbi() lia_NOEXCEPT {
+		return *reinterpret_cast<IVectorConstIterator<T>*>(m_buf.data);
+	}
+
+	const IVectorConstIterator<T>& getAbi() const lia_NOEXCEPT {
+		return *reinterpret_cast<const IVectorConstIterator<T>*>(m_buf.data);
+	}
+
+	operator IVectorConstIterator<T>&() lia_NOEXCEPT {
+		return getAbi();
+	}
+
+	operator const IVectorConstIterator<T>&() const lia_NOEXCEPT {
+		return getAbi();
+	}
+
+	VectorConstIteratorHandle(): m_isConstructed(false), reserved__() {}
+
+	VectorConstIteratorHandle(const VectorConstIteratorHandle& other): m_isConstructed(false), reserved__() {
+		if (other.m_isConstructed) {
+			other.getAbi().abiCloneTo(m_buf.data);
+			m_isConstructed = true;
+		}
+	}
+
+	VectorConstIteratorHandle& operator=(const VectorConstIteratorHandle& other) {
+		if (&other != this) {
+			detachImpl();
+			if (other.m_isConstructed) {
+				other.getAbi().abiCloneTo(m_buf.data);
+				m_isConstructed = true;
+			}
+		}
+		return *this;
+	}
+
+	~VectorConstIteratorHandle() {
+		detachImpl();
+	}
+
+	void* getBuffer() lia_NOEXCEPT {
+		return m_buf.data;
+	}
+
+	void setConstructed() lia_NOEXCEPT {
+		m_isConstructed = true;
+	}
+
+private:
+
+	void detachImpl() {
+		if (m_isConstructed) {
+			getAbi().abiFinalize();
+			m_isConstructed = false;
+		}
+	}
+
+	union Data {
+		memalign_t alignmentDummy;
+		char data[lia::detail::kIteratorBufSize];
+	} m_buf;
+	abi_bool_t m_isConstructed;
+	uint8_t reserved__[sizeof(void*)-1];
+};
+
+#undef lia_VectorConstIteratorHandle_BASE
+
 #define lia_IVector_BASE(T) lia::detail::VectorApiMixin<T, \
                                                         lia::IVector<T>, \
                                                         typename lia::detail::MakeTypes<T>::Reference, \
                                                         typename lia::detail::MakeTypes<T>::Pointer, \
                                                         typename lia::detail::MakeTypes<T>::ConstReference, \
-                                                        typename lia::detail::MakeTypes<T>::ConstPointer \
+                                                        typename lia::detail::MakeTypes<T>::ConstPointer, \
+                                                        VectorIteratorHandle<T>, \
+                                                        VectorConstIteratorHandle<T> \
                                                        >
 
 //! Interface version history:
@@ -119,15 +378,17 @@ public:
 		return *this;
 	}
 
-	/* vtable index  0 */ virtual void lia_CALL abiGetIVectorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
-	/* vtable index  1 */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
-	/* vtable index  2 */ virtual void lia_CALL abiClear() lia_NOEXCEPT = 0;
-	/* vtable index  3 */ virtual abi_bool_t lia_CALL abiReserve(abi_size_t n) lia_NOEXCEPT = 0;
-	/* vtable index  4 */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) lia_NOEXCEPT = 0;
-	/* vtable index  5 */ virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx) lia_NOEXCEPT = 0;
-	/* vtable index  6 */ virtual abi_size_t lia_CALL abiGetSize() const lia_NOEXCEPT = 0;
-	/* vtable index  7 */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
-	/* vtable index  8 */ virtual abi_bool_t lia_CALL abiGetAtConst(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
+	/* vtable index  0  */ virtual void lia_CALL abiGetIVectorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
+	/* vtable index  1  */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
+	/* vtable index  2  */ virtual void lia_CALL abiClear() lia_NOEXCEPT = 0;
+	/* vtable index  3  */ virtual abi_bool_t lia_CALL abiReserve(abi_size_t n) lia_NOEXCEPT = 0;
+	/* vtable index  4  */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) lia_NOEXCEPT = 0;
+	/* vtable index  5  */ virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx) lia_NOEXCEPT = 0;
+	/* vtable index  6  */ virtual abi_size_t lia_CALL abiGetSize() const lia_NOEXCEPT = 0;
+	/* vtable index  7  */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
+	/* vtable index  8  */ virtual abi_bool_t lia_CALL abiGetAtConst(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
+	/* vtable index  9  */ virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  10 */ virtual void lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT = 0;
 
 private:
 
