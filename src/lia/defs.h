@@ -380,8 +380,14 @@ struct RemoveReference<const T&>
 	typedef T type;
 };
 
+template<typename T>
+struct IsLiaInterface {
+	static const bool value = false;
+};
+
 template<bool b, class T=void>
-struct EnableIf;
+struct EnableIf {
+};
 
 template<class T>
 struct EnableIf<true, T> {

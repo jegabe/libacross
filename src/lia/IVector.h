@@ -57,10 +57,20 @@ template<typename T>
 class IVectorIterator;
 
 template<typename T>
+struct IsLiaInterface<IVectorIterator<T> > {
+	static const bool value = true;
+};
+
+template<typename T>
 class VectorIteratorHandle;
 
 template<typename T>
 class IVector;
+
+template<typename T>
+struct IsLiaInterface<IVector<T> > {
+	static const bool value = true;
+};
 
 namespace detail {
 
@@ -93,8 +103,7 @@ struct MakeTypes< IVector<const T> > {
 
 }
 
-#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<true, \
-                                                                        T, \
+#define lia_IVectorIterator_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
                                                                         lia::IVectorIterator<T>, \
                                                                         typename lia::detail::MakeTypes<T>::Reference, \
                                                                         typename lia::detail::MakeTypes<T>::Pointer \
@@ -129,8 +138,7 @@ private:
 
 #undef lia_IVectorIterator_BASE
 
-#define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<false, \
-                                                                             T, \
+#define lia_VectorIteratorHandle_BASE(T) lia::detail::VectorIteratorApiMixin<T, \
                                                                              lia::VectorIteratorHandle<T>, \
                                                                              typename lia::detail::MakeTypes<T>::Reference, \
                                                                              typename lia::detail::MakeTypes<T>::Pointer \
