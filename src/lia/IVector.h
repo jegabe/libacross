@@ -117,7 +117,7 @@ public:
 	/* vtable index  2 */ virtual void lia_CALL abiFinalize() lia_NOEXCEPT = 0;
 	/* vtable index  3 */ virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
 	/* vtable index  4 */ virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
-	/* vtable index  5 */ virtual abi_bool_t lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  6 */ virtual void lia_CALL abiDereferenceConst(typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
 private:
 
@@ -266,7 +266,7 @@ public:
 	/* vtable index  6  */ virtual abi_size_t lia_CALL abiGetSize() const lia_NOEXCEPT = 0;
 	/* vtable index  7  */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  8  */ virtual abi_bool_t lia_CALL abiGetAtConst(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
-	/* vtable index  9  */ virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, abi_bool_t asConstIterator, void* pBuf) const lia_NOEXCEPT = 0;
+	/* vtable index  9  */ virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT = 0;
 
 private:
 
