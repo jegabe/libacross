@@ -58,6 +58,10 @@ THE SOFTWARE.
 namespace lia {
 namespace detail {
 
+// Mix-in class for adding public RandomAccessIterator API into sub-class.
+// The class TSubClass that derives from this mixin is required to implement
+// a public function getAbi() that returns a reference to some type that's
+// equal or API compatible to IVectorIterator.
 template<typename T,
          typename TSubClass,
          typename TReference,
