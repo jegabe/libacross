@@ -109,7 +109,12 @@ struct MakeTypes< IVector<const T> > {
                                                                         typename lia::detail::MakeTypes<T>::Pointer \
                                                                        >
 
-
+//! Interface version history:
+//!
+//! semver | notes
+//! ------ | --------
+//! 0.1    | Pre-release version
+//!
 template<typename T>
 class IVectorIterator: public lia_IVectorIterator_BASE(T)
 {
