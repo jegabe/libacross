@@ -330,8 +330,6 @@ struct InterfaceVersion {
 	uint32_t minor; //!< Is incremented when a new function is appended to the interface
 };
 
-#define lia_ABI (downCast().getAbi())
-
 //! \def lia_HAS_EXPECTED_WCHAR_T_SIZE
 //! \hideinitializer
 //! Is defined to one (1) when wchar_t is 16 bits under windows and 32 bits under linux (unsigned) for the currently used build environment,

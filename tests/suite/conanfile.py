@@ -58,6 +58,7 @@ class TestSuite(ConanFile):
 
 	def imports(self):
 		self.copy("*.dll", dst="bin", src="bin")
+		self.copy("*.lib", dst="lib", src="lib")
 		self.copy("*.a",   dst="bin", src="lib")
 		self.copy("*.so*", dst="bin", src="lib")
 		

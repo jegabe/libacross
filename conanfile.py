@@ -51,17 +51,15 @@ class Libacross(ConanFile):
 	license = "MIT"
 	description = "See README.md"
 	# No settings required: This is a header only library
-	exports_sources = "src/*", "CMakeLists.txt", "conanfile.py"
-	generators = "cmake"
+	exports_sources = "src/*"
 	no_copy_source = True
-
-	def build(self): # this is not building a library, just tests
-		cmake = CMake(self)
-		cmake.configure()
-		cmake.build()
 	
 	def package(self):
 		self.copy("*.h", dst="include", src="src")
+			
+	def package_info(self):
+		if not self.in_local_cache: # when package is in editable mode: The include dir is src/
+			self.cpp_info.includedirs = ["src"]
 	
 	def package_id(self):
 		self.info.header_only()

@@ -62,6 +62,7 @@ namespace detail {
 
 #define lia_VectorProxy_BASE(T) VectorApiMixin<T, \
                                                VectorProxy<T>, \
+                                               lia::IVector<T>, \
                                                typename MakeTypes<T>::Reference, \
                                                typename MakeTypes<T>::Pointer, \
                                                typename MakeTypes<T>::ConstReference, \

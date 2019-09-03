@@ -55,12 +55,19 @@ typedef lia::IVector<lia::int32_t>* (lia_CALL *CreateInt32VectorFunction)(void);
 
 }
 
-TEST(IVector, Blah) {
+TEST(IVector, AssignmentOperator) {
 	const auto creators = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
 	EXPECT_GT(creators.size(), 0);
 	for (const auto creator: creators) {
-		auto* pVector = (*creator)();
-		EXPECT_EQ(pVector->size(), 0);
-		delete pVector;
+		auto& rVector = *(*creator)();
+		{ // test assignment to std::vector
+			std::vector<lia::int32_t> v { 1, 2, 3 };
+			rVector = v;
+			EXPECT_EQ(rVector.size(), 3);
+			EXPECT_EQ(rVector[0], 1);
+			EXPECT_EQ(rVector[1], 2);
+			EXPECT_EQ(rVector[2], 3);
+		}
+		delete &rVector;
 	}
 }
