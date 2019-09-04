@@ -335,7 +335,7 @@ struct InterfaceVersion {
 //! Is defined to one (1) when wchar_t is 16 bits under windows and 32 bits under linux (unsigned) for the currently used build environment,
 //! which is the default or expected size for those platforms.
 //! If that's not the case, it is defined to be (0) and as a consequence, no lia::IString<wchar_t> support will be compiled, in order
-//! to avoid errors during function calls between modules built with different compilers
+//! to avoid errors during function calls between modules built with different compilers that don't agree on wchar_t width
 #ifdef _WIN32
 	#if ((WCHAR_MIN == 0) && (WCHAR_MAX == 0xFFFF))
 		#define lia_HAS_EXPECTED_WCHAR_T_SIZE 1
