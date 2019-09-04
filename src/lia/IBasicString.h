@@ -71,7 +71,7 @@ class IBasicString: public lia_IBasicString_BASE(T) {
 public:
 
 	#if (!lia_HAS_EXPECTED_WCHAR_T_SIZE)
-		lia_STATIC_ASSERT((!lia::IsSame<T, wchar_t>::value), "IBasicString can't be instantiated with T=wchar_t on systems with non-standard wchar_t size. You may be able to fix that with compiler switches that influence the size of size_t. Under Windows, it should be 16 bits wide and under linux, it should be 32 bits wide. See definition of lia_HAS_EXPECTED_WCHAR_T_SIZE.")
+		lia_STATIC_ASSERT((!lia::detail::IsSame<T, wchar_t>::value), "IBasicString can't be instantiated with T=wchar_t on systems with non-standard wchar_t size. You may be able to fix that with compiler switches that influence the size of size_t. Under Windows, it should be 16 bits wide and under linux, it should be 32 bits wide. See definition of lia_HAS_EXPECTED_WCHAR_T_SIZE.")
 	#endif
 
 	typedef IBasicString<T> ThisType;

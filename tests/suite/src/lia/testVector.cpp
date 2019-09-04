@@ -43,31 +43,162 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+#include <memory>
 #include <gtest/gtest.h>
 #include <lia/DllLoader.h>
 #include <lia/IVector.h>
 
 using namespace lia::dll_loader;
+using namespace lia;
+using namespace std;
 
 namespace {
 
-typedef lia::IVector<lia::int32_t>* (lia_CALL *CreateInt32VectorFunction)(void);
+typedef IVector<int32_t>* (lia_CALL *CreateInt32VectorFunction)(void);
+typedef IVector<IVector<int32_t>>* (lia_CALL *CreateInt32VectorVectorFunction)(void);
 
 }
 
-TEST(IVector, AssignmentOperator) {
-	const auto creators = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
-	EXPECT_GT(creators.size(), 0);
-	for (const auto creator: creators) {
-		auto& rVector = *(*creator)();
-		{ // test assignment to std::vector
-			std::vector<lia::int32_t> v { 1, 2, 3 };
-			rVector = v;
-			EXPECT_EQ(rVector.size(), 3);
-			EXPECT_EQ(rVector[0], 1);
-			EXPECT_EQ(rVector[1], 2);
-			EXPECT_EQ(rVector[2], 3);
+TEST(IVector, assignmentOperator) {
+	const auto creatorsSimple  = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
+	const auto creatorsComplex = getDllFunctions<CreateInt32VectorVectorFunction>("createInt32VectorVector");
+	EXPECT_GT(creatorsSimple.size(), 0);
+	ASSERT_EQ(creatorsSimple.size(), creatorsComplex.size());
+	for (size_t i=0; i<creatorsSimple.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*creatorsSimple[i])());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*creatorsComplex[i])());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		{ // test assignment to vector
+			{
+				vector<int32_t> v { 1, 2, 3 };
+				rVectorSimple = v; // assignment to vector
+				ASSERT_EQ(rVectorSimple.size(), 3);
+				EXPECT_EQ(rVectorSimple[0], 1);
+				EXPECT_EQ(rVectorSimple[1], 2);
+				EXPECT_EQ(rVectorSimple[2], 3);
+				rVectorSimple.clear();
+				EXPECT_EQ(rVectorSimple.size(), 0);
+			}
+			{
+				vector<vector<int32_t>> v { { 1 }, { 1, 2 }, { 1, 2, 3 }};
+				rVectorComplex = v; // assignment to vector
+				ASSERT_EQ(rVectorComplex.size(), 3);
+				EXPECT_EQ(rVectorComplex[0].size(), 1);
+				EXPECT_EQ(rVectorComplex[1].size(), 2);
+				EXPECT_EQ(rVectorComplex[2].size(), 3);
+				rVectorComplex.clear();
+				EXPECT_EQ(rVectorComplex.size(), 0);
+			}
 		}
-		delete &rVector;
+		{ // test assignment to other IVector 
+			{
+				unique_ptr<IVector<int32_t>> pSrc((*creatorsSimple[i])());
+				auto& rSrc = *pSrc;
+				vector<int32_t> v { 1, 2, 3 };
+				rSrc = v;
+				rVectorSimple = rSrc; // assignment to IVector
+				ASSERT_EQ(rVectorSimple.size(), 3);
+				EXPECT_EQ(rVectorSimple[0], 1);
+				EXPECT_EQ(rVectorSimple[1], 2);
+				EXPECT_EQ(rVectorSimple[2], 3);
+				rVectorSimple.clear();
+				EXPECT_EQ(rVectorSimple.size(), 0);
+			}
+			{
+				unique_ptr<IVector<IVector<int32_t>>> pSrc((*creatorsComplex[i])());
+				auto& rSrc = *pSrc;
+				vector<vector<int32_t>> v { { 1 }, { 1, 2}, { 1, 2, 3 }};
+				rSrc = v;
+				rVectorComplex = rSrc; // assignment to IVector
+				ASSERT_EQ(rVectorComplex.size(), 3);
+				EXPECT_EQ(rVectorComplex[0].size(), 1);
+				EXPECT_EQ(rVectorComplex[1].size(), 2);
+				EXPECT_EQ(rVectorComplex[2].size(), 3);
+				rVectorComplex.clear();
+				EXPECT_EQ(rVectorComplex.size(), 0);
+			}
+		}
+		{ // test assignment to initializer_list
+			{
+				initializer_list<int32_t> il { 1, 2, 3 };
+				rVectorSimple = il; // assignment to initializer_list
+				ASSERT_EQ(rVectorSimple.size(), 3);
+				EXPECT_EQ(rVectorSimple[0], 1);
+				EXPECT_EQ(rVectorSimple[1], 2);
+				EXPECT_EQ(rVectorSimple[2], 3);
+				rVectorSimple.clear();
+				EXPECT_EQ(rVectorSimple.size(), 0);
+			}
+			// note: nested initializer_list aren't supported!
+		}
+	}
+}
+
+TEST(IVector, assign) {
+	const auto creatorsSimple  = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
+	const auto creatorsComplex = getDllFunctions<CreateInt32VectorVectorFunction>("createInt32VectorVector");
+	EXPECT_GT(creatorsSimple.size(), 0);
+	ASSERT_EQ(creatorsSimple.size(), creatorsComplex.size());
+	for (size_t i=0; i<creatorsSimple.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*creatorsSimple[i])());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*creatorsComplex[i])());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		{ // test assign(count, value)
+			{
+				rVectorSimple.assign(std::size_t(3), int32_t(4711));
+				ASSERT_EQ(rVectorSimple.size(), 3);
+				EXPECT_EQ(rVectorSimple[0], 4711);
+				EXPECT_EQ(rVectorSimple[1], 4711);
+				EXPECT_EQ(rVectorSimple[2], 4711);
+				rVectorSimple.clear();
+				EXPECT_EQ(rVectorSimple.size(), 0);
+			}
+			{
+				vector<int32_t> v { 1, 2, 3 };
+				rVectorComplex.assign(std::size_t(3), v);
+				ASSERT_EQ(rVectorComplex.size(), 3);
+				EXPECT_EQ(rVectorComplex[0].size(), 3);
+				EXPECT_EQ(rVectorComplex[1].size(), 3);
+				EXPECT_EQ(rVectorComplex[2].size(), 3);
+				rVectorComplex.clear();
+				EXPECT_EQ(rVectorComplex.size(), 0);
+			}
+		}
+		{ // test assign(iterator, iterator)
+			{
+				vector<int32_t> v { 1, 2, 3 };
+				rVectorSimple.assign(v.begin(), v.end());
+				ASSERT_EQ(rVectorSimple.size(), 3);
+				EXPECT_EQ(rVectorSimple[0], 1);
+				EXPECT_EQ(rVectorSimple[1], 2);
+				EXPECT_EQ(rVectorSimple[2], 3);
+				rVectorSimple.clear();
+				EXPECT_EQ(rVectorSimple.size(), 0);
+			}
+			{
+				vector<vector<int32_t>> v { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+				rVectorComplex.assign(v.begin(), v.end());
+				ASSERT_EQ(rVectorComplex.size(), 3);
+				EXPECT_EQ(rVectorComplex[0].size(), 1);
+				EXPECT_EQ(rVectorComplex[1].size(), 2);
+				EXPECT_EQ(rVectorComplex[2].size(), 3);
+				rVectorComplex.clear();
+				EXPECT_EQ(rVectorComplex.size(), 0);
+			}
+		}
+		{ // test assign(initializer_list)
+			{
+				initializer_list<int32_t> il { 1, 2, 3 };
+				rVectorSimple.assign(il);
+				ASSERT_EQ(rVectorSimple.size(), 3);
+				EXPECT_EQ(rVectorSimple[0], 1);
+				EXPECT_EQ(rVectorSimple[1], 2);
+				EXPECT_EQ(rVectorSimple[2], 3);
+				rVectorSimple.clear();
+				EXPECT_EQ(rVectorSimple.size(), 0);
+			}
+		}
 	}
 }

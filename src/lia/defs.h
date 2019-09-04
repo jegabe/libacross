@@ -291,12 +291,12 @@ struct MakeInterface {
 	typedef T Type;
 };
 
-}
-
 template<typename T>
 struct MakeRef {
 	typedef T Type;
 };
+
+}
 
 #ifdef lia_DISABLE_EXCEPTIONS
 	#ifndef lia_THROW0 // you might as well override this...
@@ -349,6 +349,8 @@ struct InterfaceVersion {
 	#define lia_HAS_EXPECTED_WCHAR_T_SIZE 0
 #endif
 
+namespace detail {
+
 // Re-implementation of std::is_same because this lib also supports old C++ (98) standard
 template<typename T, typename U>
 struct IsSame {
@@ -393,6 +395,27 @@ struct EnableIf<true, T> {
 };
 
 }
+
+}
+
+#if lia_CPP11_API
+#include <initializer_list>
+namespace lia {
+namespace detail {
+
+template<typename T>
+struct IsInitializerList {
+	static const bool value = false;
+};
+
+template<typename T>
+struct IsInitializerList<std::initializer_list<T> > {
+	static const bool value = true;
+};
+
+}
+}
+#endif
 
 #else /* C compiler */
 

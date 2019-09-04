@@ -85,8 +85,6 @@ struct MakeInterface< std::basic_string<A, B, C> > {
 	typedef lia::IBasicString<A> Type;
 };
 
-}
-
 template<typename A, typename B, typename C>
 struct MakeRef< std::basic_string<A, B, C> > {
 	typedef lia::BasicStringRef< A, std::basic_string<A, B, C>& > Type;
@@ -95,6 +93,8 @@ struct MakeRef< std::basic_string<A, B, C> > {
 template<typename A, typename B, typename C>
 typename MakeRef< std::basic_string<A, B, C> >::Type makeRef(std::basic_string<A, B, C>& s) {
 	return typename MakeRef< std::basic_string<A, B, C> >::Type(s);
+}
+
 }
 
 typedef lia::BasicStringRef<char, std::string&> StringRef;

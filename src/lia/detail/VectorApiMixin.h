@@ -46,14 +46,15 @@ THE SOFTWARE.
 #ifndef lia_detail_VectorApiMixin_h_INCLUDED
 #define lia_detail_VectorApiMixin_h_INCLUDED
 
+#ifdef __cplusplus
+	#include <new>       // for std::bad_alloc
+	#include <stdexcept> // for std::out_of_range
+	#include <vector>
+#endif
 #include <lia/defs.h>
 #include <lia/detail/PushWarnings.h>
 
 #ifdef __cplusplus
-
-#include <new>       // for std::bad_alloc
-#include <stdexcept> // for std::out_of_range
-#include <vector>
 
 namespace lia {
 namespace detail {
@@ -105,7 +106,7 @@ public:
 	}
 	
 	template<typename TSub = TSubClass> 
-	typename lia::EnableIf<!lia::IsLiaInterface<TSub>::value, TSub>::type operator++(int) {
+	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<TSub>::value, TSub>::type operator++(int) {
 		TInterface& rThis = downCast().getAbi();
 		TSub result = downCast();
 		rThis.abiAdvance(1);
@@ -113,7 +114,7 @@ public:
 	}
 
 	template<typename TSub = TSubClass> 
-	typename lia::EnableIf<!lia::IsLiaInterface<TSub>::value, TSub>::type operator--(int) {
+	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<TSub>::value, TSub>::type operator--(int) {
 		TInterface& rThis = downCast().getAbi();
 		TSub result = downCast();
 		rThis.abiAdvance(-1);
@@ -121,14 +122,14 @@ public:
 	}
 
 	template<typename TSub = TSubClass> 
-	typename lia::EnableIf<!lia::IsLiaInterface<TSub>::value, TSub>::type operator+(std::ptrdiff_t i) {
+	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<TSub>::value, TSub>::type operator+(std::ptrdiff_t i) {
 		TSub result = downCast();
 		result.getAbi().abiAdvance(static_cast<abi_ptrdiff_t>(i));
 		return result;
 	}
 
 	template<typename TSub = TSubClass> 
-	typename lia::EnableIf<!lia::IsLiaInterface<TSub>::value, TSub>::type operator-(std::ptrdiff_t i) {
+	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<TSub>::value, TSub>::type operator-(std::ptrdiff_t i) {
 		TSub result = downCast();
 		result.getAbi().abiAdvance(static_cast<abi_ptrdiff_t>(-i));
 		return result;
@@ -186,18 +187,19 @@ public:
 	// - the types for 'pointer', 'const_pointer', 'reference' and 'const_reference' may be proxy objects acting like a
 	//   reference or pointer that help delegating calls to the other side of the ABI boundary. Proxy objects are used
 	//   when the type 'T' which is accessed, is some interface 'lia::ISomething'
+	// - no support for assignment to nested std::initializer_list objects (unnested initializer_list<T> works!)
 
-	typedef T value_type;
-	typedef std::size_t size_type;
-	typedef std::ptrdiff_t difference_type;
-	typedef TReference reference;
-	typedef TConstReference const_reference;
-	typedef TPointer pointer;
-	typedef TConstPointer const_pointer;
-	typedef TIterator iterator;
-	typedef TConstIterator const_iterator;
-	typedef std::reverse_iterator<iterator> reverse_iterator;
-	typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
+	typedef T                                      value_type;
+	typedef std::size_t                            size_type;
+	typedef std::ptrdiff_t                         difference_type;
+	typedef TReference                             reference;
+	typedef TConstReference                        const_reference;
+	typedef TPointer                               pointer;
+	typedef TConstPointer                          const_pointer;
+	typedef TIterator                              iterator;
+	typedef TConstIterator                         const_iterator;
+	typedef std::reverse_iterator<iterator>        reverse_iterator;
+	typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
 
 	template<typename U, typename V>
 	VectorApiMixin& operator=(const std::vector<U, V>& v) {
@@ -221,26 +223,30 @@ public:
 
 	VectorApiMixin& operator=(const TInterface& v) {
 		TInterface& rThis = downCast().getAbi();
-		rThis.abiClear();
-		const abi_size_t vSize = v.abiGetSize();
-		if (!rThis.abiReserve(vSize)) {
-			lia_THROW0(std::bad_alloc);
-		}
-		abi_size_t newPos = 0;
-		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
-		for (abi_size_t i=0; i<vSize; ++i) {
-			v.abiGetAtConst(i, pElem);
-			if (!rThis.abiInsert(i, pElem)) {
-				rThis.abiClear();
+		if (&v != &rThis) {
+			rThis.abiClear();
+			const abi_size_t vSize = v.abiGetSize();
+			if (!rThis.abiReserve(vSize)) {
 				lia_THROW0(std::bad_alloc);
 			}
+			abi_size_t newPos = 0;
+			typename lia::detail::MakeTypes<T>::ConstPointer pElem;
+			for (abi_size_t i=0; i<vSize; ++i) {
+				v.abiGetAtConst(i, pElem);
+				if (!rThis.abiInsert(i, pElem)) {
+					rThis.abiClear();
+					lia_THROW0(std::bad_alloc);
+				}
+			}
 		}
+		return *this;
 	}
 
 #if lia_CPP11_API
 
 	template<typename U>
-	VectorApiMixin& operator=(const std::initializer_list<U>& v) {
+	VectorApiMixin& operator=(std::initializer_list<U> v) {
+		lia_STATIC_ASSERT((!lia::detail::IsInitializerList<U>::value), "No nested std::initializer_list support in assignment")
 		TInterface& rThis = downCast().getAbi();
 		rThis.abiClear();
 		if (!rThis.abiReserve(static_cast<abi_size_t>(v.size()))) {
@@ -248,7 +254,7 @@ public:
 		}
 		abi_size_t newPos = 0;
 		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
-		for (typename std::vector<U, V>::const_iterator iter = v.begin(); iter != v.end(); ++iter) {
+		for (auto iter = v.begin(); iter != v.end(); ++iter) {
 			assignElemPtr(pElem, *iter);
 			if (!rThis.abiInsert(newPos, pElem)) {
 				rThis.abiClear();
@@ -295,6 +301,16 @@ public:
 			++newPos;
 		}
 	}
+
+#if lia_CPP11_API
+
+	template<typename U>
+	void assign(const std::initializer_list<U> v) {
+		(void)(*this = v);
+	}
+
+#endif
+
 
 	TReference at(std::size_t pos) {
 		TInterface& rThis = downCast().getAbi();
@@ -386,10 +402,22 @@ public:
 
 	template<typename U, typename V>
 	operator std::vector<U, V>() const lia_NOEXCEPT {
+		const TInterface& rThis = downCast().getAbi();
 		std::vector<U, V> v;
+		v.reserve(static_cast<std::size_t>(rThis.abiGetSize()));
+		const abi_size_t sz = rThis.abiGetSize();
+		TConstPointer pElem;
+		for (abi_size_t i=0; i<sz; ++i) {
+			(void)rThis.abiGetAtConst(i, pElem);
+			v.push_back(derefElemPtr(pElem));
+		}
 		return v;
 	}
-	
+
+	void clear() lia_NOEXCEPT {
+		TInterface& rThis = downCast().getAbi();
+		rThis.abiClear();
+	}
 
 private:
 
