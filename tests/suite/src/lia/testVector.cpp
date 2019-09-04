@@ -202,3 +202,117 @@ TEST(IVector, assign) {
 		}
 	}
 }
+
+TEST(IVector, at) {
+	const auto creatorsSimple  = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
+	const auto creatorsComplex = getDllFunctions<CreateInt32VectorVectorFunction>("createInt32VectorVector");
+	EXPECT_GT(creatorsSimple.size(), 0);
+	ASSERT_EQ(creatorsSimple.size(), creatorsComplex.size());
+	for (size_t i=0; i<creatorsSimple.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*creatorsSimple[i])());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*creatorsComplex[i])());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			ASSERT_EQ(rVectorSimple.size(), 3);
+			EXPECT_EQ(rVectorSimple.at(0), 1);
+			EXPECT_EQ(rVectorSimple.at(1), 2);
+			EXPECT_EQ(rVectorSimple.at(2), 3);
+			EXPECT_EQ(rcVectorSimple.at(0), 1);
+			EXPECT_EQ(rcVectorSimple.at(1), 2);
+			EXPECT_EQ(rcVectorSimple.at(2), 3);
+			bool caught = false;
+			try {
+				(void)rVectorSimple.at(4);
+			}
+			catch(const out_of_range&) {
+				caught = true;
+			}
+			catch(...) {
+			}
+			EXPECT_TRUE(caught);
+			caught = false;
+			try {
+				(void)rcVectorSimple.at(4);
+			}
+			catch(const out_of_range&) {
+				caught = true;
+			}
+			catch(...) {
+			}
+			EXPECT_TRUE(caught);
+		}
+		{
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			ASSERT_EQ(rVectorComplex.size(), 3);
+			EXPECT_EQ(rVectorComplex.at(0).size(), 1);
+			EXPECT_EQ(rVectorComplex.at(1).size(), 2);
+			EXPECT_EQ(rVectorComplex.at(2).size(), 3);
+			EXPECT_EQ(rcVectorComplex.at(0).size(), 1);
+			EXPECT_EQ(rcVectorComplex.at(1).size(), 2);
+			EXPECT_EQ(rcVectorComplex.at(2).size(), 3);
+			bool caught = false;
+			try {
+				(void)rVectorComplex.at(4);
+			}
+			catch(const out_of_range&) {
+				caught = true;
+			}
+			catch(...) {
+			}
+			EXPECT_TRUE(caught);
+			caught = false;
+			try {
+				(void)rcVectorComplex.at(4);
+			}
+			catch(const out_of_range&) {
+				caught = true;
+			}
+			catch(...) {
+			}
+			EXPECT_TRUE(caught);
+		}
+	}
+}
+
+TEST(IVector, operatorBracket) {
+	const auto creatorsSimple  = getDllFunctions<CreateInt32VectorFunction>("createInt32Vector");
+	const auto creatorsComplex = getDllFunctions<CreateInt32VectorVectorFunction>("createInt32VectorVector");
+	EXPECT_GT(creatorsSimple.size(), 0);
+	ASSERT_EQ(creatorsSimple.size(), creatorsComplex.size());
+	for (size_t i=0; i<creatorsSimple.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*creatorsSimple[i])());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*creatorsComplex[i])());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			ASSERT_EQ(rVectorSimple.size(), 3);
+			EXPECT_EQ(rVectorSimple[0], 1);
+			EXPECT_EQ(rVectorSimple[1], 2);
+			EXPECT_EQ(rVectorSimple[2], 3);
+			EXPECT_EQ(rcVectorSimple[0], 1);
+			EXPECT_EQ(rcVectorSimple[1], 2);
+			EXPECT_EQ(rcVectorSimple[2], 3);
+		}
+		{
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			ASSERT_EQ(rVectorComplex.size(), 3);
+			EXPECT_EQ(rVectorComplex[0].size(), 1);
+			EXPECT_EQ(rVectorComplex[1].size(), 2);
+			EXPECT_EQ(rVectorComplex[2].size(), 3);
+			EXPECT_EQ(rcVectorComplex[0].size(), 1);
+			EXPECT_EQ(rcVectorComplex[1].size(), 2);
+			EXPECT_EQ(rcVectorComplex[2].size(), 3);
+		}
+	}
+}
