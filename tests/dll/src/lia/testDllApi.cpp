@@ -44,7 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 #include <lia/testDllApi.h>
-#include <lia/VectorRef.h>
+#include <lia/IVector.h>
 #include <lia/BasicStringRef.h>
 
 using namespace lia;
