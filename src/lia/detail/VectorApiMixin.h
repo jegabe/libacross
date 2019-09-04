@@ -60,9 +60,6 @@ namespace lia {
 namespace detail {
 
 // Mix-in class for adding public RandomAccessIterator API into sub-class.
-// The class TSubClass that derives from this mixin is required to implement
-// a public function getAbi() that returns a reference to some type that's
-// equal or API compatible to IVectorIterator.
 template<typename T,
          typename TSubClass,
          typename TInterface,
@@ -167,9 +164,6 @@ private:
 lia_STATIC_ASSERT(sizeof(VectorIteratorApiMixin<int, int, int, int&, int*>) == 1u, "API class is not allowed to contain any virtual functions")
 
 // Mix-in class for adding public std::vector compatible API into sub-class.
-// The class TSubClass that derives from this mixin is required to implement
-// a public function getAbi() that returns a reference to some type that's
-// equal or API compatible to IVector
 template<typename T,
          typename TSubClass,
          typename TInterface,

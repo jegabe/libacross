@@ -134,12 +134,12 @@ public:
 		return *this;
 	}
 
-	/* vtable index  0 */ virtual void lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
-	/* vtable index  1 */ virtual void lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT = 0;
-	/* vtable index  2 */ virtual void lia_CALL abiFinalize() lia_NOEXCEPT = 0;
-	/* vtable index  3 */ virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
-	/* vtable index  4 */ virtual void lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
-	/* vtable index  5 */ virtual void lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem, abi_ptrdiff_t i) const lia_NOEXCEPT = 0;
+	/* vtable index  0 */ virtual void          lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
+	/* vtable index  1 */ virtual void          lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT = 0;
+	/* vtable index  2 */ virtual void          lia_CALL abiFinalize() lia_NOEXCEPT = 0;
+	/* vtable index  3 */ virtual abi_ptrdiff_t lia_CALL abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
+	/* vtable index  4 */ virtual void          lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void          lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem, abi_ptrdiff_t i) const lia_NOEXCEPT = 0;
 private:
 
 	typedef lia_IVectorIterator_BASE(T) ApiBase;
@@ -279,17 +279,17 @@ public:
 		return *this;
 	}
 
-	/* vtable index  0  */ virtual void lia_CALL abiGetIVectorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
-	/* vtable index  1  */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
-	/* vtable index  2  */ virtual void lia_CALL abiClear() lia_NOEXCEPT = 0;
+	/* vtable index  0  */ virtual void       lia_CALL abiGetIVectorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
+	/* vtable index  1  */ virtual void       lia_CALL abiDestroy() lia_NOEXCEPT = 0;
+	/* vtable index  2  */ virtual void       lia_CALL abiClear() lia_NOEXCEPT = 0;
 	/* vtable index  3  */ virtual abi_bool_t lia_CALL abiReserve(abi_size_t n) lia_NOEXCEPT = 0;
 	/* vtable index  4  */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  5  */ virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx) lia_NOEXCEPT = 0;
 	/* vtable index  6  */ virtual abi_size_t lia_CALL abiGetSize() const lia_NOEXCEPT = 0;
 	/* vtable index  7  */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  8  */ virtual abi_bool_t lia_CALL abiGetAtConst(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
-	/* vtable index  9  */ virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT = 0;
-	/* vtable index  10 */ virtual void lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT = 0;
+	/* vtable index  9  */ virtual void       lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  10 */ virtual void       lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT = 0;
 
 private:
 
@@ -431,7 +431,7 @@ public:
 		m_iter.~TIterator();
 	}
 
-	virtual abi_ptrdiff_t abiGetDistance(const IVectorIterator<T>& other_) const lia_NOEXCEPT lia_OVERRIDE {
+	virtual abi_ptrdiff_t lia_CALL abiGetDistance(const IVectorIterator<T>& other_) const lia_NOEXCEPT lia_OVERRIDE {
 		const ThisType& other = static_cast<const ThisType&>(other_);
 		return static_cast<abi_ptrdiff_t>(m_iter - other.m_iter);
 	}
