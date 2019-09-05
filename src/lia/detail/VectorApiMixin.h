@@ -50,6 +50,7 @@ THE SOFTWARE.
 	#include <new>       // for std::bad_alloc
 	#include <stdexcept> // for std::out_of_range
 	#include <vector>
+	#include <utility>   // for std::move
 #endif
 #include <lia/defs.h>
 #include <lia/detail/PushWarnings.h>
@@ -150,6 +151,16 @@ public:
 		return downCast();
 	}
 
+	bool operator==(const TSubClass& other) const lia_NOEXCEPT {
+		const TInterface& rThis = downCast().getAbi();
+		const abi_ptrdiff_t distance = rThis.abiGetDistance(other.getAbi());
+		return (distance == 0);
+	}
+
+	bool operator!=(const TSubClass& other) const lia_NOEXCEPT {
+		return !(*this == other);
+	}
+
 private:
 
 	TSubClass& downCast() lia_NOEXCEPT {
@@ -182,6 +193,7 @@ public:
 	//   reference or pointer that help delegating calls to the other side of the ABI boundary. Proxy objects are used
 	//   when the type 'T' which is accessed, is some interface 'lia::ISomething'
 	// - no support for assignment to nested std::initializer_list objects (unnested initializer_list<T> works!)
+	// - no support for the data() function when type T is another 'ISomeInterface'
 
 	typedef T                                      value_type;
 	typedef std::size_t                            size_type;
@@ -305,7 +317,6 @@ public:
 
 #endif
 
-
 	TReference at(std::size_t pos) {
 		TInterface& rThis = downCast().getAbi();
 		TPointer pElem;
@@ -368,7 +379,29 @@ public:
 		return derefElemPtr(pElem);
 	}
 
-	TIterator begin() {
+	template<typename U = T> 
+	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<U>::value, U*>::type data() lia_NOEXCEPT {
+		TInterface& rThis = downCast().getAbi();
+		U* pResult;
+		if (!rThis.abiGetAt(0, pResult))
+		{
+			pResult = lia_NULLPTR;
+		}
+		return pResult;
+	}
+
+	template<typename U = T> 
+	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<U>::value, const U*>::type data() const lia_NOEXCEPT {
+		const TInterface& rThis = downCast().getAbi();
+		const U* pResult;
+		if (!rThis.abiGetAtConst(0, pResult))
+		{
+			pResult = lia_NULLPTR;
+		}
+		return pResult;
+	}
+
+	TIterator begin() lia_NOEXCEPT {
 		TInterface& rThis = downCast().getAbi();
 		TIterator iter;
 		rThis.abiConstructIterator(abi_true, iter.getBuffer());
@@ -376,12 +409,36 @@ public:
 		return iter;
 	}
 
-	TConstIterator begin() const {
+	TConstIterator begin() const lia_NOEXCEPT {
+		const TInterface& rThis = downCast().getAbi();
+		TConstIterator iter;
+		rThis.abiConstructConstIterator(abi_true, iter.getBuffer());
+		iter.setConstructed();
+		return iter;
+	}
+
+	TConstIterator cbegin() const lia_NOEXCEPT {
+		return begin();
+	}
+
+	TIterator end() lia_NOEXCEPT {
+		TInterface& rThis = downCast().getAbi();
+		TIterator iter;
+		rThis.abiConstructIterator(abi_false, iter.getBuffer());
+		iter.setConstructed();
+		return iter;
+	}
+
+	TConstIterator end() const lia_NOEXCEPT {
 		const TInterface& rThis = downCast().getAbi();
 		TConstIterator iter;
 		rThis.abiConstructConstIterator(abi_false, iter.getBuffer());
 		iter.setConstructed();
 		return iter;
+	}
+
+	TConstIterator cend() const lia_NOEXCEPT {
+		return end();
 	}
 
 	bool empty() const lia_NOEXCEPT {

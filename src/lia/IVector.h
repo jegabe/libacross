@@ -136,10 +136,11 @@ public:
 
 	/* vtable index  0 */ virtual void          lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
 	/* vtable index  1 */ virtual void          lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT = 0;
-	/* vtable index  2 */ virtual void          lia_CALL abiFinalize() lia_NOEXCEPT = 0;
-	/* vtable index  3 */ virtual abi_ptrdiff_t lia_CALL abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
-	/* vtable index  4 */ virtual void          lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
-	/* vtable index  5 */ virtual void          lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem, abi_ptrdiff_t i) const lia_NOEXCEPT = 0;
+	/* vtable index  2 */ virtual void          lia_CALL abiMoveTo(void* pBuf) lia_NOEXCEPT = 0;
+	/* vtable index  3 */ virtual void          lia_CALL abiFinalize() lia_NOEXCEPT = 0;
+	/* vtable index  4 */ virtual abi_ptrdiff_t lia_CALL abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
+	/* vtable index  5 */ virtual void          lia_CALL abiAdvance(abi_ptrdiff_t n) lia_NOEXCEPT = 0;
+	/* vtable index  6 */ virtual void          lia_CALL abiDereference(typename lia::detail::MakeTypes<T>::Pointer& pElem, abi_ptrdiff_t i) const lia_NOEXCEPT = 0;
 private:
 
 	typedef lia_IVectorIterator_BASE(T) ApiBase;
@@ -186,6 +187,17 @@ public:
 		}
 	}
 
+#if lia_CPP11_API
+
+	VectorIteratorHandle(VectorIteratorHandle&& other) lia_NOEXCEPT: m_isConstructed(false), reserved__() {
+		if (other.m_isConstructed) {
+			other.getAbi().abiMoveTo(m_buf.data);
+			m_isConstructed = true;
+		}
+	}
+
+#endif
+
 	VectorIteratorHandle& operator=(const VectorIteratorHandle& other) {
 		if (&other != this) {
 			detachImpl();
@@ -196,6 +208,19 @@ public:
 		}
 		return *this;
 	}
+
+#if lia_CPP11_API
+
+	VectorIteratorHandle& operator=(VectorIteratorHandle&& other) lia_NOEXCEPT {
+		detachImpl();
+		if (other.m_isConstructed) {
+			other.getAbi().abiMoveTo(m_buf.data);
+			m_isConstructed = true;
+		}
+		return *this;
+	}
+
+#endif
 
 	~VectorIteratorHandle() {
 		detachImpl();
@@ -332,7 +357,11 @@ template<typename T>
 class VectorProxy: public lia_VectorProxy_BASE(T) {
 public:
 
-	VectorProxy<T>* operator->() const lia_NOEXCEPT {
+	VectorProxy<T>* operator->() lia_NOEXCEPT {
+		return this;
+	}
+
+	const VectorProxy<T>* operator->() const lia_NOEXCEPT {
 		return this;
 	}
 
@@ -416,6 +445,10 @@ public:
 
 	VectorIteratorRef() lia_NOEXCEPT: m_iter() {}
 	explicit VectorIteratorRef(const TIterator& i) lia_NOEXCEPT :m_iter(i) {}
+#if lia_CPP11_API
+	explicit VectorIteratorRef(TIterator&& i) lia_NOEXCEPT :m_iter(std::forward<TIterator>(i)) {}
+#endif
+
 	virtual ~VectorIteratorRef() lia_NOEXCEPT {}
 
 	virtual void lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT lia_OVERRIDE {
@@ -425,6 +458,16 @@ public:
 
 	virtual void lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
 		new(pBuf) ThisType(m_iter);
+	}
+
+	virtual void lia_CALL abiMoveTo(void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
+		new(pBuf) ThisType(
+#if lia_CPP11_API
+			std::move(m_iter)
+#else
+			m_iter
+#endif
+		);
 	}
 
 	virtual void lia_CALL abiFinalize() lia_NOEXCEPT lia_OVERRIDE {
