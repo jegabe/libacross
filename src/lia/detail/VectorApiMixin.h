@@ -449,6 +449,30 @@ public:
 		return end();
 	}
 
+	reverse_iterator rbegin() lia_NOEXCEPT {
+		return reverse_iterator(end());
+	}
+
+	reverse_iterator rend() lia_NOEXCEPT {
+		return reverse_iterator(begin());
+	}
+
+	const_reverse_iterator rbegin() const lia_NOEXCEPT {
+		return const_reverse_iterator(end());
+	}
+
+	const_reverse_iterator rend() const lia_NOEXCEPT {
+		return const_reverse_iterator(begin());
+	}
+
+	const_reverse_iterator rcbegin() const lia_NOEXCEPT {
+		return const_reverse_iterator(end());
+	}
+
+	const_reverse_iterator rcend() const lia_NOEXCEPT {
+		return const_reverse_iterator(begin());
+	}
+
 	bool empty() const lia_NOEXCEPT {
 		const TInterface& rThis = downCast().getAbi();
 		return (rThis.abiGetSize() == 0);

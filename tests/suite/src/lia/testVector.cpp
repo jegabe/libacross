@@ -535,3 +535,34 @@ TEST(IVector, iterateRangeBased) {
 		}
 	}
 }
+
+TEST(IVector, iterateReverse) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*vecs[i].second)());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			const auto end = rVectorSimple.rend();
+			int32_t j = 3;
+			for (auto iter = rVectorSimple.rbegin(); iter != end; ++iter, --j) {
+				EXPECT_EQ(*iter, j);
+			}
+			EXPECT_EQ(j, 0);
+		}
+		{
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			const auto end = rVectorComplex.rend();
+			int32_t j = 3;
+			for (auto iter = rVectorComplex.rbegin(); iter != end; ++iter, --j) {
+				EXPECT_EQ(iter->size(), j);
+			}
+			EXPECT_EQ(j, 0);
+		}
+	}
+}
