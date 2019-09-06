@@ -504,6 +504,7 @@ public:
 	}
 
 	void shrink_to_fit() lia_NOEXCEPT {
+		const TInterface& rThis = downCast().getAbi();
 		rThis = downCast().getAbi();
 		(void)rThis.abiReserve(0, abi_true);
 	}
