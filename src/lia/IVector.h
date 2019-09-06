@@ -606,24 +606,6 @@ typename MakeRef< std::vector<A, B> >::Type makeRef(std::vector<A, B>& v) {
 
 }
 
-#ifdef lia_CPP11_API
-namespace std {
-
-// std::reverse_iterator<> needs this for operator->() to work (at least for visual studio)
-template<typename T>
-struct pointer_traits<lia::detail::VectorProxy<T> > {
-	typedef lia::detail::VectorProxy<T> pointer;
-	typedef lia::detail::VectorProxy<T> element_type;
-	typedef std::ptrdiff_t              difference_type;
-	static pointer pointer_to(element_type& r) lia_NOEXCEPT {
-		return r;
-	}
-	template<typename U> using rebind = lia::detail::VectorProxy<U>;
-};
-
-}
-#endif
-
 #else /* C compiler */
 
 /* Not yet implemented */

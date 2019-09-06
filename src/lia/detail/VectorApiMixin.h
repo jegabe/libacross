@@ -50,10 +50,10 @@ THE SOFTWARE.
 	#include <new>
 	#include <stdexcept>
 	#include <vector>
-	#include <iterator>
 	#include <utility>
 #endif
 #include <lia/defs.h>
+#include <lia/detail/ReverseIterator.h>
 #include <lia/detail/PushWarnings.h>
 
 #ifdef __cplusplus
@@ -203,17 +203,17 @@ public:
 	// - no support for assignment to nested std::initializer_list objects (unnested initializer_list<T> works!)
 	// - no support for the data() function when type T is another 'ISomeInterface'
 
-	typedef T                                      value_type;
-	typedef std::size_t                            size_type;
-	typedef std::ptrdiff_t                         difference_type;
-	typedef TReference                             reference;
-	typedef TConstReference                        const_reference;
-	typedef TPointer                               pointer;
-	typedef TConstPointer                          const_pointer;
-	typedef TIterator                              iterator;
-	typedef TConstIterator                         const_iterator;
-	typedef std::reverse_iterator<iterator>        reverse_iterator;
-	typedef std::reverse_iterator<const_iterator>  const_reverse_iterator;
+	typedef T                                            value_type;
+	typedef std::size_t                                  size_type;
+	typedef std::ptrdiff_t                               difference_type;
+	typedef TReference                                   reference;
+	typedef TConstReference                              const_reference;
+	typedef TPointer                                     pointer;
+	typedef TConstPointer                                const_pointer;
+	typedef TIterator                                    iterator;
+	typedef TConstIterator                               const_iterator;
+	typedef lia::detail::ReverseIterator<iterator>       reverse_iterator;
+	typedef lia::detail::ReverseIterator<const_iterator> const_reverse_iterator;
 
 	template<typename U, typename V>
 	VectorApiMixin& operator=(const std::vector<U, V>& v) {
