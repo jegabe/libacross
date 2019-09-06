@@ -202,7 +202,10 @@ public:
 	//   when the type 'T' which is accessed, is some interface 'lia::ISomething'
 	// - no support for assignment to nested std::initializer_list objects (unnested initializer_list<T> works!)
 	// - no support for the data() function when type T is another 'ISomeInterface'
-	// - no support for range-based for loop with references "for(auto& x: cont) {}" when T is is another 'ISomeInterface'. Using values instead of references works though.
+	// - no support for range-based for loop with references "for(auto& x: cont) {}" when T is is another 'ISomeInterface'.
+	//   Using values instead of references works though, or alternatively 
+	//   the member typedefs "reference" or "const_reference" of the container. The macros lia_ELEM_REF and lia_ELEM_CONST_REF
+	//   return references for a specified container (when using C++11 or higher)
 
 	typedef T                                            value_type;
 	typedef std::size_t                                  size_type;
@@ -392,8 +395,7 @@ public:
 	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<U>::value, U*>::type data() lia_NOEXCEPT {
 		TInterface& rThis = downCast().getAbi();
 		U* pResult;
-		if (!rThis.abiGetAt(0, pResult))
-		{
+		if (!rThis.abiGetAt(0, pResult)) {
 			pResult = lia_NULLPTR;
 		}
 		return pResult;
@@ -403,8 +405,7 @@ public:
 	typename lia::detail::EnableIf<!lia::detail::IsLiaInterface<U>::value, const U*>::type data() const lia_NOEXCEPT {
 		const TInterface& rThis = downCast().getAbi();
 		const U* pResult;
-		if (!rThis.abiGetAtConst(0, pResult))
-		{
+		if (!rThis.abiGetAtConst(0, pResult)) {
 			pResult = lia_NULLPTR;
 		}
 		return pResult;
@@ -484,6 +485,89 @@ public:
 		return static_cast<std::size_t>(rThis.abiGetSize());
 	}
 
+	std::size_t max_size() const lia_NOEXCEPT {
+		return static_cast<std::size_t>(-1);
+	}
+
+	void reserve(std::size_t n) {
+		TInterface& rThis = downCast().getAbi();
+		if (!rThis.abiReserve(static_cast<abi_size_t>(n))) {
+			lia_THROW0(std::bad_alloc);
+		}
+	}
+
+	std::size_t capacity() const lia_NOEXCEPT {
+		const TInterface& rThis = downCast().getAbi();
+		abi_size_t result = 0;
+		(void)rThis.abiGetSize(&result);
+		return result;
+	}
+
+	void shrink_to_fit() lia_NOEXCEPT {
+		rThis = downCast().getAbi();
+		(void)rThis.abiReserve(0, abi_true);
+	}
+
+	void clear() lia_NOEXCEPT {
+		TInterface& rThis = downCast().getAbi();
+		rThis.abiClear();
+	}
+
+	iterator insert(const_iterator pos, const T& value) {
+		const std::ptrdiff_t distanceFromBegin = pos - cbegin();
+		return insertImpl(distanceFromBegin, 1u, value);
+	}
+
+	iterator insert(typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type pos, const T& value) {
+		const std::ptrdiff_t distanceFromBegin = pos - begin();
+		return insertImpl(distanceFromBegin, 1u, value);
+	}
+
+	iterator insert(const_iterator pos, std::size_t count, const T& value) {
+		const std::ptrdiff_t distanceFromBegin = pos - cbegin();
+		return insertImpl(distanceFromBegin, count, value);
+	}
+
+	iterator insert(typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type pos, std::size_t count, const T& value) {
+		const std::ptrdiff_t distanceFromBegin = pos - begin();
+		return insertImpl(distanceFromBegin, count, value);
+	}
+
+	template<class InputIt>
+	iterator insert(const_iterator pos, InputIt first, InputIt last) {
+		const std::ptrdiff_t distanceFromBegin = pos - cbegin();
+		return insertImpl<InputIt>(distanceFromBegin, first, last);
+	}
+
+	template<class InputIt>
+	iterator insert(typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type pos, InputIt first, InputIt last) {
+		const std::ptrdiff_t distanceFromBegin = pos - begin();
+		return insertImpl<InputIt>(distanceFromBegin, first, last);
+	}
+
+#if lia_CPP11_API
+
+	iterator insert(const_iterator pos, std::initializer_list<T> ilist) {
+		const TInterface& rThis = downCast().getAbi();
+		const std::ptrdiff_t distanceFromBegin = pos - cbegin();
+		return insertImpl(distanceFromBegin, ilist.begin(), ilist.end());
+	}
+
+#endif
+
+#if lia_CPP11_API
+
+	template<typename... Args> 
+	iterator emplace(const_iterator pos, Args&&... args) {
+		return insert(pos, T(std::forward<Args>(args)...));
+	}
+
+#endif
+
+	// TODO
+
+	// helper functions
+
 	template<typename U, typename V>
 	operator std::vector<U, V>() const lia_NOEXCEPT {
 		const TInterface& rThis = downCast().getAbi();
@@ -498,12 +582,48 @@ public:
 		return v;
 	}
 
-	void clear() lia_NOEXCEPT {
+private:
+
+	iterator insertImpl(std::ptrdiff_t distanceFromBegin, std::size_t n, const T& value) {
 		TInterface& rThis = downCast().getAbi();
-		rThis.abiClear();
+		if (distanceFromBegin < 0) {
+				lia_THROW1(std::out_of_range, "in insert() call");
+		}
+		if (!rThis.abiReserve(static_cast<abi_size_t>(n))) {
+			lia_THROW0(std::bad_alloc);
+		}
+		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
+		assignElemPtr(pElem, value);
+		std::ptrdiff_t j = distanceFromBegin;
+		for (std::size_t i=0; i<n; ++i, ++j) {
+			if (!rThis.abiInsert(static_cast<abi_size_t>(j), pElem)) {
+				lia_THROW0(std::bad_alloc);
+			}
+		}
+		return begin() + distanceFromBegin;
 	}
 
-private:
+	template<class InputIt>
+	iterator insertImpl(std::ptrdiff_t distanceFromBegin, InputIt first, InputIt last) {
+		TInterface& rThis = downCast().getAbi();
+		if (distanceFromBegin < 0) {
+				lia_THROW1(std::out_of_range, "in insert() call");
+		}
+		const std::size_t n = static_cast<std::size_t>(std::distance<InputIt>(first, last));
+		if (!rThis.abiReserve(static_cast<abi_size_t>(n))) {
+			lia_THROW0(std::bad_alloc);
+		}
+		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
+		std::ptrdiff_t j = distanceFromBegin;
+		for (InputIt iter = first; iter != last; ++iter, ++j) {
+			assignElemPtr(pElem, *iter);
+			if (!rThis.abiInsert(static_cast<abi_size_t>(j), pElem)) {
+				lia_THROW0(std::bad_alloc);
+			}
+		}
+		return begin() + distanceFromBegin;
+	}
+
 
 	TSubClass& downCast() lia_NOEXCEPT {
 		return static_cast<TSubClass&>(*this);

@@ -59,7 +59,7 @@ namespace detail {
 
 // Re-implementation of std::reverse_iterator, needed because the proxy objects (for example lia::detail::VectorProxy) act different
 // to pointers and so some functions, such as reverse_iterator::operator->, don't work on all platforms/tool chains.
-// This implementation is aware of the quirks of libacross, so this one is used instead of std::reverse_iterator for several r[c]begin()/r[c]end() implementations.
+// This implementation is aware of the specialities of libacross, so this one is used instead of std::reverse_iterator for several r[c]begin()/r[c]end() implementations.
 template<typename TIter>
 class ReverseIterator
 {

@@ -381,6 +381,18 @@ struct RemoveReference<const T&>
 };
 
 template<typename T>
+struct RemoveConst
+{
+	typedef T type;
+};
+
+template<typename T>
+struct RemoveConst<const T>
+{
+	typedef T type;
+};
+
+template<typename T>
 struct IsLiaInterface {
 	static const bool value = false;
 };
@@ -393,6 +405,18 @@ template<class T>
 struct EnableIf<true, T> {
 	typedef T type;
 };
+
+template<bool b, typename Then, typename Else>
+struct IfThenElse {
+	typedef Then type;
+};
+
+template<typename Then, typename Else>
+struct IfThenElse<false, Then, Else> {
+	typedef Else type;
+};
+
+struct Incomplete;
 
 }
 
@@ -415,6 +439,13 @@ struct IsInitializerList<std::initializer_list<T> > {
 
 }
 }
+
+//! Returns the type of reference to an element in a lia container interface
+#define lia_ELEM_REF(container) lia::detail::RemoveReference<decltype(container)>::type::reference
+
+//! Returns the type of reference to an element in a lia container interface
+#define lia_ELEM_CONST_REF(container) lia::detail::RemoveReference<decltype(container)>::type::const_reference
+
 #endif
 
 #else /* C compiler */

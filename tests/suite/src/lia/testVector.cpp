@@ -521,13 +521,13 @@ TEST(IVector, iterateRangeBased) {
 			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
 			rVectorComplex = vc;
 			int32_t j = 1;
-			for (auto element: rVectorComplex) {
+			for (lia_ELEM_REF(rVectorComplex) element: rVectorComplex) {
 				EXPECT_EQ(element.size(), j);
 				++j;
 			}
 			EXPECT_EQ(j, 4);
 			j = 1;
-			for (const auto element: rcVectorComplex) {
+			for (lia_ELEM_CONST_REF(rcVectorComplex) element: rcVectorComplex) {
 				EXPECT_EQ(element.size(), j);
 				++j;
 			}
@@ -563,6 +563,174 @@ TEST(IVector, iterateReverse) {
 				EXPECT_EQ(iter->size(), j);
 			}
 			EXPECT_EQ(j, 0);
+		}
+	}
+}
+
+TEST(IVector, empty) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*vecs[i].second)());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			EXPECT_TRUE(rcVectorSimple.empty());
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			EXPECT_FALSE(rcVectorSimple.empty());
+		}
+		{
+			EXPECT_TRUE(rcVectorComplex.empty());
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			EXPECT_FALSE(rcVectorComplex.empty());
+		}
+	}
+}
+
+TEST(IVector, size) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*vecs[i].second)());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			EXPECT_EQ(rcVectorSimple.size(), 0);
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			EXPECT_EQ(rcVectorSimple.size(), 3);
+		}
+		{
+			EXPECT_EQ(rcVectorComplex.size(), 0);
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			EXPECT_EQ(rcVectorComplex.size(), 3);
+		}
+	}
+}
+
+TEST(IVector, capacity) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*vecs[i].second)());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			EXPECT_GE(rcVectorSimple.capacity(), 3);
+		}
+		{
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			EXPECT_GE(rcVectorComplex.capacity(), 3);
+		}
+	}
+}
+
+TEST(IVector, clear) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*vecs[i].second)());
+		auto& rVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			EXPECT_FALSE(rcVectorSimple.empty());
+			rVectorSimple.clear();
+			EXPECT_TRUE(rcVectorSimple.empty());
+		}
+		{
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			EXPECT_FALSE(rcVectorComplex.empty());
+			rVectorComplex.clear();
+			EXPECT_TRUE(rcVectorComplex.empty());
+		}
+	}
+}
+
+TEST(IVector, insert) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		auto& rVectorSimple  = *pVectorSimple;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		{
+			rVectorSimple.insert(rVectorSimple.begin(),  1);
+			rVectorSimple.insert(rVectorSimple.cbegin(), 2);
+			rVectorSimple.insert(rVectorSimple.begin(),  3);
+			ASSERT_EQ(rcVectorSimple.size(), 3);
+			EXPECT_EQ(rcVectorSimple[0], 3);
+			EXPECT_EQ(rcVectorSimple[1], 2);
+			EXPECT_EQ(rcVectorSimple[2], 1);
+			rVectorSimple.clear();
+		}
+		{
+			rVectorSimple.insert(rVectorSimple.begin(),  std::size_t(3), 1);
+			rVectorSimple.insert(rVectorSimple.cbegin(), std::size_t(2), 2);
+			ASSERT_EQ(rcVectorSimple.size(), 5);
+			EXPECT_EQ(rcVectorSimple[0], 2);
+			EXPECT_EQ(rcVectorSimple[1], 2);
+			EXPECT_EQ(rcVectorSimple[2], 1);
+			EXPECT_EQ(rcVectorSimple[3], 1);
+			EXPECT_EQ(rcVectorSimple[4], 1);
+			rVectorSimple.clear();
+		}
+		{
+			vector<int32_t> x { 1, 2, 3 };
+			rVectorSimple.insert(rVectorSimple.begin(), x.begin(), x.end());
+			rVectorSimple.insert(rVectorSimple.cbegin(), x.begin(), x.end());
+			ASSERT_EQ(rcVectorSimple.size(), 6);
+			EXPECT_EQ(rcVectorSimple[0], 1);
+			EXPECT_EQ(rcVectorSimple[1], 2);
+			EXPECT_EQ(rcVectorSimple[2], 3);
+			EXPECT_EQ(rcVectorSimple[3], 1);
+			EXPECT_EQ(rcVectorSimple[4], 2);
+			EXPECT_EQ(rcVectorSimple[5], 3);
+			rVectorSimple.clear();
+		}
+		{
+			initializer_list<int32_t> x { 1, 2, 3 };
+			rVectorSimple.insert(rVectorSimple.cbegin(), x);
+			ASSERT_EQ(rcVectorSimple.size(), 3);
+			EXPECT_EQ(rcVectorSimple[0], 1);
+			EXPECT_EQ(rcVectorSimple[1], 2);
+			EXPECT_EQ(rcVectorSimple[2], 3);
+			rVectorSimple.clear();
+		}
+	}
+}
+
+TEST(IVector, emplace) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		auto& rVectorSimple  = *pVectorSimple;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		{
+			rVectorSimple.emplace(rVectorSimple.cbegin(), 1);
+			ASSERT_EQ(rcVectorSimple.size(), 1);
+			EXPECT_EQ(rcVectorSimple[0], 1);
 		}
 	}
 }
