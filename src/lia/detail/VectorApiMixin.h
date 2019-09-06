@@ -202,6 +202,7 @@ public:
 	//   when the type 'T' which is accessed, is some interface 'lia::ISomething'
 	// - no support for assignment to nested std::initializer_list objects (unnested initializer_list<T> works!)
 	// - no support for the data() function when type T is another 'ISomeInterface'
+	// - no support for range-based for loop with references "for(auto& x: cont) {}" when T is is another 'ISomeInterface'. Using values instead of references works though.
 
 	typedef T                                            value_type;
 	typedef std::size_t                                  size_type;

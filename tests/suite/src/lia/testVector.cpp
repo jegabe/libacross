@@ -521,13 +521,13 @@ TEST(IVector, iterateRangeBased) {
 			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
 			rVectorComplex = vc;
 			int32_t j = 1;
-			for (auto& element: rVectorComplex) {
+			for (auto element: rVectorComplex) {
 				EXPECT_EQ(element.size(), j);
 				++j;
 			}
 			EXPECT_EQ(j, 4);
 			j = 1;
-			for (const auto& element: rcVectorComplex) {
+			for (const auto element: rcVectorComplex) {
 				EXPECT_EQ(element.size(), j);
 				++j;
 			}
