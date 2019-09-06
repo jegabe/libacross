@@ -466,3 +466,72 @@ TEST(IVector, iterateConst) {
 		}
 	}
 }
+
+TEST(IVector, iterateWithInterfaceUpcast) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		auto& rVectorSimple  = *pVectorSimple;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			int32_t j = 1;
+			auto iter = rVectorSimple.begin();
+			auto end = rVectorSimple.end();
+			IVectorIterator<int32_t>& rIter = iter;
+			IVectorIterator<int32_t>& rEnd = end;
+			for (;rIter != rEnd; ++rIter, ++j) {
+				EXPECT_EQ(*rIter, j);
+			}
+			EXPECT_EQ(j, 4);
+			*rVectorSimple.begin() = 4;
+			EXPECT_EQ(*rVectorSimple.begin(), 4);
+		}
+	}
+}
+
+TEST(IVector, iterateRangeBased) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		unique_ptr<IVector<IVector<int32_t>>> pVectorComplex((*vecs[i].second)());
+		auto& rVectorSimple  = *pVectorSimple;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		auto& rVectorComplex = *pVectorComplex;
+		const auto& rcVectorComplex = *pVectorComplex;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			int32_t j = 1;
+			for (auto& element: rVectorSimple) {
+				EXPECT_EQ(element, j);
+				++j;
+			}
+			EXPECT_EQ(j, 4);
+			j = 1;
+			for (const auto& element: rcVectorSimple) {
+				EXPECT_EQ(element, j);
+				++j;
+			}
+			EXPECT_EQ(j, 4);
+		}
+		{
+			const vector<vector<int32_t>> vc { { 1 }, { 1, 2 }, { 1, 2, 3 } };
+			rVectorComplex = vc;
+			int32_t j = 1;
+			for (auto& element: rVectorComplex) {
+				EXPECT_EQ(element.size(), j);
+				++j;
+			}
+			EXPECT_EQ(j, 4);
+			j = 1;
+			for (const auto& element: rcVectorComplex) {
+				EXPECT_EQ(element.size(), j);
+				++j;
+			}
+			EXPECT_EQ(j, 4);
+		}
+	}
+}

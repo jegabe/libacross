@@ -47,10 +47,11 @@ THE SOFTWARE.
 #define lia_detail_VectorApiMixin_h_INCLUDED
 
 #ifdef __cplusplus
-	#include <new>       // for std::bad_alloc
-	#include <stdexcept> // for std::out_of_range
+	#include <new>
+	#include <stdexcept>
 	#include <vector>
-	#include <utility>   // for std::move
+	#include <iterator>
+	#include <utility>
 #endif
 #include <lia/defs.h>
 #include <lia/detail/PushWarnings.h>
@@ -69,7 +70,14 @@ template<typename T,
 class VectorIteratorApiMixin {
 public:
 
-	// API according to https://en.cppreference.com/w/cpp/container/vector
+	// API according to https://en.cppreference.com/w/cpp/iterator/iterator_traits
+
+	typedef std::ptrdiff_t                  difference_type;
+	typedef T                               value_type;
+	typedef TPointer                        pointer;
+	typedef TReference                      reference;
+	typedef std::random_access_iterator_tag iterator_category;
+
 	TReference operator*() const {
 		const TInterface& rThis = downCast().getAbi();
 		TPointer pElem;
