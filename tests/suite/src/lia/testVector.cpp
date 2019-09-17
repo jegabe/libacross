@@ -675,9 +675,12 @@ TEST(IVector, insert) {
 		auto& rVectorSimple  = *pVectorSimple;
 		const auto& rcVectorSimple  = *pVectorSimple;
 		{
-			rVectorSimple.insert(rVectorSimple.begin(),  1);
-			rVectorSimple.insert(rVectorSimple.cbegin(), 2);
-			rVectorSimple.insert(rVectorSimple.begin(),  3);
+			auto iter = rVectorSimple.insert(rVectorSimple.begin(), 1);
+			EXPECT_EQ(iter, rVectorSimple.begin());
+			iter = rVectorSimple.insert(rVectorSimple.cbegin(), 2);
+			EXPECT_EQ(iter, rVectorSimple.begin());
+			iter = rVectorSimple.insert(rVectorSimple.begin(),  3);
+			EXPECT_EQ(iter, rVectorSimple.begin());
 			ASSERT_EQ(rcVectorSimple.size(), 3);
 			EXPECT_EQ(rcVectorSimple[0], 3);
 			EXPECT_EQ(rcVectorSimple[1], 2);
@@ -685,8 +688,10 @@ TEST(IVector, insert) {
 			rVectorSimple.clear();
 		}
 		{
-			rVectorSimple.insert(rVectorSimple.begin(),  std::size_t(3), 1);
-			rVectorSimple.insert(rVectorSimple.cbegin(), std::size_t(2), 2);
+			auto iter = rVectorSimple.insert(rVectorSimple.begin(),  std::size_t(3), 1);
+			EXPECT_EQ(iter, rVectorSimple.begin());
+			iter = rVectorSimple.insert(rVectorSimple.cbegin(), std::size_t(2), 2);
+			EXPECT_EQ(iter, rVectorSimple.begin());
 			ASSERT_EQ(rcVectorSimple.size(), 5);
 			EXPECT_EQ(rcVectorSimple[0], 2);
 			EXPECT_EQ(rcVectorSimple[1], 2);
@@ -697,8 +702,10 @@ TEST(IVector, insert) {
 		}
 		{
 			vector<int32_t> x { 1, 2, 3 };
-			rVectorSimple.insert(rVectorSimple.begin(), x.begin(), x.end());
-			rVectorSimple.insert(rVectorSimple.cbegin(), x.begin(), x.end());
+			auto iter = rVectorSimple.insert(rVectorSimple.begin(), x.begin(), x.end());
+			EXPECT_EQ(iter, rVectorSimple.begin());
+			iter = rVectorSimple.insert(rVectorSimple.cbegin(), x.begin(), x.end());
+			EXPECT_EQ(iter, rVectorSimple.begin());
 			ASSERT_EQ(rcVectorSimple.size(), 6);
 			EXPECT_EQ(rcVectorSimple[0], 1);
 			EXPECT_EQ(rcVectorSimple[1], 2);
@@ -710,7 +717,8 @@ TEST(IVector, insert) {
 		}
 		{
 			initializer_list<int32_t> x { 1, 2, 3 };
-			rVectorSimple.insert(rVectorSimple.cbegin(), x);
+			auto iter = rVectorSimple.insert(rVectorSimple.cbegin(), x);
+			EXPECT_EQ(iter, rVectorSimple.begin());
 			ASSERT_EQ(rcVectorSimple.size(), 3);
 			EXPECT_EQ(rcVectorSimple[0], 1);
 			EXPECT_EQ(rcVectorSimple[1], 2);
@@ -728,9 +736,30 @@ TEST(IVector, emplace) {
 		auto& rVectorSimple  = *pVectorSimple;
 		const auto& rcVectorSimple  = *pVectorSimple;
 		{
-			rVectorSimple.emplace(rVectorSimple.cbegin(), 1);
+			auto iter = rVectorSimple.emplace(rVectorSimple.cbegin(), 1);
+			EXPECT_EQ(iter, rVectorSimple.begin());
 			ASSERT_EQ(rcVectorSimple.size(), 1);
 			EXPECT_EQ(rcVectorSimple[0], 1);
+		}
+	}
+}
+
+TEST(IVector, erase) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		auto& rVectorSimple  = *pVectorSimple;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			auto iter = rVectorSimple.erase(rcVectorSimple.begin()+1);
+			EXPECT_EQ(*iter, 3);
+			rVectorSimple.clear();
+			rVectorSimple = vs;
+			iter = rVectorSimple.erase(rVectorSimple.cbegin(), rVectorSimple.cend());
+			EXPECT_TRUE(rcVectorSimple.empty());
 		}
 	}
 }

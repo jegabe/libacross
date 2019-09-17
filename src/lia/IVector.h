@@ -309,7 +309,7 @@ public:
 	/* vtable index  2  */ virtual void       lia_CALL abiClear() lia_NOEXCEPT = 0;
 	/* vtable index  3  */ virtual abi_bool_t lia_CALL abiReserve(abi_size_t n, abi_bool_t shrinkToFit = abi_false) lia_NOEXCEPT = 0;
 	/* vtable index  4  */ virtual abi_bool_t lia_CALL abiInsert(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) lia_NOEXCEPT = 0;
-	/* vtable index  5  */ virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx) lia_NOEXCEPT = 0;
+	/* vtable index  5  */ virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx, abi_size_t n = 1u) lia_NOEXCEPT = 0;
 	/* vtable index  6  */ virtual abi_size_t lia_CALL abiGetSize(abi_size_t* pCapacity = lia_NULLPTR) const lia_NOEXCEPT = 0;
 	/* vtable index  7  */ virtual abi_bool_t lia_CALL abiGetAt(abi_size_t idx, typename lia::detail::MakeTypes<T>::Pointer& pElem) lia_NOEXCEPT = 0;
 	/* vtable index  8  */ virtual abi_bool_t lia_CALL abiGetAtConst(abi_size_t idx, typename lia::detail::MakeTypes<T>::ConstPointer& pElem) const lia_NOEXCEPT = 0;
@@ -547,13 +547,14 @@ public:
 		return abi_true;
 	}
 
-	virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx) lia_NOEXCEPT lia_OVERRIDE {
-		const std::size_t i = static_cast<std::size_t>(idx);
+	virtual abi_bool_t lia_CALL abiRemove(abi_size_t idx, abi_size_t n = 1u) lia_NOEXCEPT lia_OVERRIDE {
+		const std::size_t i   = static_cast<std::size_t>(idx);
+		const std::size_t num = static_cast<std::size_t>(n);
 		if (i >= m_vector.size()) {
 			return abi_false;
 		}
 		lia_TRY
-				m_vector.erase(m_vector.begin() + i);
+				m_vector.erase(m_vector.begin() + i, m_vector.begin() + i + num);
 		lia_CATCHALL(return abi_false)
 		return abi_true;
 	}

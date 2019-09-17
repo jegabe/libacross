@@ -219,6 +219,8 @@ public:
 	typedef lia::detail::ReverseIterator<iterator>       reverse_iterator;
 	typedef lia::detail::ReverseIterator<const_iterator> const_reverse_iterator;
 
+#define lia_NONCONST_ITER typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type
+
 	template<typename U, typename V>
 	VectorApiMixin& operator=(const std::vector<U, V>& v) {
 		TInterface& rThis = downCast().getAbi();
@@ -519,7 +521,7 @@ public:
 		return insertImpl(distanceFromBegin, 1u, value);
 	}
 
-	iterator insert(typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type pos, const T& value) {
+	iterator insert(lia_NONCONST_ITER pos, const T& value) {
 		const std::ptrdiff_t distanceFromBegin = pos - begin();
 		return insertImpl(distanceFromBegin, 1u, value);
 	}
@@ -529,7 +531,7 @@ public:
 		return insertImpl(distanceFromBegin, count, value);
 	}
 
-	iterator insert(typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type pos, std::size_t count, const T& value) {
+	iterator insert(lia_NONCONST_ITER pos, std::size_t count, const T& value) {
 		const std::ptrdiff_t distanceFromBegin = pos - begin();
 		return insertImpl(distanceFromBegin, count, value);
 	}
@@ -541,7 +543,7 @@ public:
 	}
 
 	template<class InputIt>
-	iterator insert(typename lia::detail::IfThenElse<!lia::detail::IsSame<typename lia::detail::RemoveConst<iterator>::type, typename lia::detail::RemoveConst<const_iterator>::type>::value, iterator, lia::detail::Incomplete>::type pos, InputIt first, InputIt last) {
+	iterator insert(lia_NONCONST_ITER pos, InputIt first, InputIt last) {
 		const std::ptrdiff_t distanceFromBegin = pos - begin();
 		return insertImpl<InputIt>(distanceFromBegin, first, last);
 	}
@@ -549,14 +551,9 @@ public:
 #if lia_CPP11_API
 
 	iterator insert(const_iterator pos, std::initializer_list<T> ilist) {
-		const TInterface& rThis = downCast().getAbi();
 		const std::ptrdiff_t distanceFromBegin = pos - cbegin();
 		return insertImpl(distanceFromBegin, ilist.begin(), ilist.end());
 	}
-
-#endif
-
-#if lia_CPP11_API
 
 	template<typename... Args> 
 	iterator emplace(const_iterator pos, Args&&... args) {
@@ -565,6 +562,27 @@ public:
 
 #endif
 
+	iterator erase(const_iterator pos) {
+		const std::ptrdiff_t distanceFromBegin = pos - cbegin();
+		return eraseImpl(distanceFromBegin, 1u);
+	}
+
+	iterator erase(lia_NONCONST_ITER pos) {
+		const std::ptrdiff_t distanceFromBegin = pos - begin();
+		return eraseImpl(distanceFromBegin, 1u);
+	}
+
+	iterator erase(const_iterator first, const_iterator last) {
+		const std::ptrdiff_t distanceFromBegin = first - cbegin();
+		const std::size_t n = static_cast<std::size_t>(last - first);
+		return eraseImpl(distanceFromBegin, n);
+	}
+
+	iterator erase(lia_NONCONST_ITER first, lia_NONCONST_ITER last) {
+		const std::ptrdiff_t distanceFromBegin = first - begin();
+		const std::size_t n = static_cast<std::size_t>(last - first);
+		return eraseImpl(distanceFromBegin, n);
+	}
 	// TODO
 
 	// helper functions
@@ -573,8 +591,8 @@ public:
 	operator std::vector<U, V>() const lia_NOEXCEPT {
 		const TInterface& rThis = downCast().getAbi();
 		std::vector<U, V> v;
-		v.reserve(static_cast<std::size_t>(rThis.abiGetSize()));
 		const abi_size_t sz = rThis.abiGetSize();
+		v.reserve(static_cast<std::size_t>(sz));
 		TConstPointer pElem;
 		for (abi_size_t i=0; i<sz; ++i) {
 			(void)rThis.abiGetAtConst(i, pElem);
@@ -625,6 +643,16 @@ private:
 		return begin() + distanceFromBegin;
 	}
 
+	iterator eraseImpl(std::ptrdiff_t distanceFromBegin, std::size_t n) {
+		if (distanceFromBegin < 0) {
+				lia_THROW1(std::out_of_range, "in erase() call");
+		}
+		TInterface& rThis = downCast().getAbi();
+		if (!rThis.abiRemove(static_cast<abi_size_t>(distanceFromBegin), static_cast<abi_size_t>(n))) {
+				lia_THROW1(std::out_of_range, "in erase() call");
+		}
+		return begin() + distanceFromBegin;
+	}
 
 	TSubClass& downCast() lia_NOEXCEPT {
 		return static_cast<TSubClass&>(*this);
@@ -633,9 +661,9 @@ private:
 	const TSubClass& downCast() const lia_NOEXCEPT {
 		return static_cast<const TSubClass&>(*this);
 	}
-};
 
-lia_STATIC_ASSERT(sizeof(VectorApiMixin<int, int, int, int&, int*, const int&, const int*, int, const int>) == 1u, "API class is not allowed to contain any virtual functions")
+	#undef lia_NONCONST_ITER
+};
 
 }
 }
