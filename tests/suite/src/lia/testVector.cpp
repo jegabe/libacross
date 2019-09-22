@@ -763,3 +763,19 @@ TEST(IVector, erase) {
 		}
 	}
 }
+
+TEST(IVector, conversionOfIteratorIntoConstIterator) {
+	const auto vecs = makeVectors();
+	EXPECT_GT(vecs.size(), 0);
+	for (size_t i=0; i<vecs.size(); ++i) {
+		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
+		auto& rVectorSimple  = *pVectorSimple;
+		const auto& rcVectorSimple  = *pVectorSimple;
+		{
+			const vector<int32_t> vs { 1, 2, 3 };
+			rVectorSimple = vs;
+			VectorIteratorHandle<int32_t> iter = pVectorSimple->begin();
+			VectorIteratorHandle<const int32_t> constIter = iter;
+		}
+	}
+}

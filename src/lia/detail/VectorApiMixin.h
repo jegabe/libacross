@@ -583,7 +583,25 @@ public:
 		const std::size_t n = static_cast<std::size_t>(last - first);
 		return eraseImpl(distanceFromBegin, n);
 	}
-	// TODO
+
+	void push_back(const T& value) {
+		const TInterface& rThis = downCast().getAbi();
+		typename lia::detail::MakeTypes<T>::ConstPointer pElem;
+		assignElemPtr(pElem, value);
+		const abi_size_t size = rThis.abiGetSize();
+		if (!rThis.abiInsert(size, pElem)) {
+			lia_THROW0(std::bad_alloc);
+		}
+	}
+
+#if lia_CPP11_API
+
+	void push_back(T&& value) {
+		const T& tmp = value;
+		push_back(tmp);
+	}
+
+#endif
 
 	// helper functions
 

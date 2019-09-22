@@ -135,7 +135,7 @@ public:
 	}
 
 	/* vtable index  0 */ virtual void          lia_CALL abiGetIVectorIteratorVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
-	/* vtable index  1 */ virtual void          lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT = 0;
+	/* vtable index  1 */ virtual void          lia_CALL abiCloneTo(void* pBuf, abi_bool_t isConstInterator) const lia_NOEXCEPT = 0;
 	/* vtable index  2 */ virtual void          lia_CALL abiMoveTo(void* pBuf) lia_NOEXCEPT = 0;
 	/* vtable index  3 */ virtual void          lia_CALL abiFinalize() lia_NOEXCEPT = 0;
 	/* vtable index  4 */ virtual abi_ptrdiff_t lia_CALL abiGetDistance(const IVectorIterator<T>& other) const lia_NOEXCEPT = 0;
@@ -178,11 +178,19 @@ public:
 		return getAbi();
 	}
 
+	// conversion into const-iterator
+	operator VectorIteratorHandle<const T>() const noexcept {
+		VectorIteratorHandle<const T> result;
+		getAbi().abiCloneTo(result.getBuffer(), abi_true);
+		result.setConstructed();
+		return result;
+	}
+
 	VectorIteratorHandle(): m_isConstructed(false), reserved__() {}
 
 	VectorIteratorHandle(const VectorIteratorHandle& other): m_isConstructed(false), reserved__() {
 		if (other.m_isConstructed) {
-			other.getAbi().abiCloneTo(m_buf.data);
+			other.getAbi().abiCloneTo(m_buf.data, abi_false);
 			m_isConstructed = true;
 		}
 	}
@@ -202,7 +210,7 @@ public:
 		if (&other != this) {
 			detachImpl();
 			if (other.m_isConstructed) {
-				other.getAbi().abiCloneTo(m_buf.data);
+				other.getAbi().abiCloneTo(m_buf.data, abi_false);
 				m_isConstructed = true;
 			}
 		}
@@ -437,11 +445,12 @@ void assignElemPtr(VectorProxy<const T>& p, const std::vector<U, V>& u) {
 
 }
 
-template<typename T, typename TIterator>
+template<typename T, typename TIterator, typename TConstIterator>
 class VectorIteratorRef lia_FINAL: public IVectorIterator<T> {
 public:
 
-	typedef VectorIteratorRef<T, TIterator> ThisType;
+	typedef VectorIteratorRef<T, TIterator, TConstIterator> ThisType;
+	typedef VectorIteratorRef<const T, TConstIterator, TConstIterator> ConstThisType;
 
 	VectorIteratorRef() lia_NOEXCEPT: m_iter() {}
 	explicit VectorIteratorRef(const TIterator& i) lia_NOEXCEPT :m_iter(i) {}
@@ -456,8 +465,13 @@ public:
 		v.minor = 1;
 	}
 
-	virtual void lia_CALL abiCloneTo(void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
-		new(pBuf) ThisType(m_iter);
+	virtual void lia_CALL abiCloneTo(void* pBuf, abi_bool_t isConstIterator) const lia_NOEXCEPT lia_OVERRIDE {
+		if (isConstIterator) {
+			new(pBuf) ConstThisType(m_iter);
+		}
+		else {
+			new(pBuf) ThisType(m_iter);
+		}
 	}
 
 	virtual void lia_CALL abiMoveTo(void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
@@ -586,12 +600,13 @@ public:
 
 	virtual void lia_CALL abiConstructIterator(abi_bool_t atBegin, void* pBuf) lia_NOEXCEPT lia_OVERRIDE {
 		typedef typename lia::detail::RemoveReference<TVector>::type::iterator TIterator;
-		new (pBuf) VectorIteratorRef<T, TIterator>(atBegin ? m_vector.begin() : m_vector.end());
+		typedef typename lia::detail::RemoveReference<TVector>::type::const_iterator TConstIterator;
+		new (pBuf) VectorIteratorRef<T, TIterator, TConstIterator>(atBegin ? m_vector.begin() : m_vector.end());
 	}
 
 	virtual void lia_CALL abiConstructConstIterator(abi_bool_t atBegin, void* pBuf) const lia_NOEXCEPT lia_OVERRIDE {
-		typedef typename lia::detail::RemoveReference<TVector>::type::const_iterator TIterator;
-		new (pBuf) VectorIteratorRef<const T, TIterator>(atBegin ? m_vector.begin() : m_vector.end());
+		typedef typename lia::detail::RemoveReference<TVector>::type::const_iterator TConstIterator;
+		new (pBuf) VectorIteratorRef<const T, TConstIterator, TConstIterator>(atBegin ? m_vector.begin() : m_vector.end());
 	}
 
 private:
