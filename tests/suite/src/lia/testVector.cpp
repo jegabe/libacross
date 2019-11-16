@@ -770,7 +770,6 @@ TEST(IVector, conversionOfIteratorIntoConstIterator) {
 	for (size_t i=0; i<vecs.size(); ++i) {
 		unique_ptr<IVector<int32_t>> pVectorSimple((*vecs[i].first)());
 		auto& rVectorSimple  = *pVectorSimple;
-		const auto& rcVectorSimple  = *pVectorSimple;
 		{
 			const vector<int32_t> vs { 1, 2, 3 };
 			rVectorSimple = vs;
