@@ -43,44 +43,51 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-#ifndef lia_testDllApi_h_INCLUDED
-#define lia_testDllApi_h_INCLUDED
+#ifndef lia_detail_SharedPtrApiMixin_h_INCLUDED
+#define lia_detail_SharedPtrApiMixin_h_INCLUDED
 
-#include <lia/IVector.h>
-#include <lia/IBasicString.h>
-#include <lia/ISharedPtr.h>
+#include <lia/defs.h>
+#include <lia/detail/PushWarnings.h>
 
-#ifdef lia_INSIDE_TEST_DLL
-	#define lia_TEST_DLL_API lia_EXPORT
-#else
-	#define lia_TEST_DLL_API lia_IMPORT
-#endif
+#ifdef __cplusplus
 
-namespace lia
-{
+#include <memory> // for std::shared_ptr
 
-class ITest
-{
+namespace lia {
+namespace detail {
+
+// Mix-in class for adding public std::basic_string compatible API into sub-class.
+// The class TSubClass that derives from this mixin is required to implement
+// a public function getAbi() that returns a reference to some type that's
+// equal or API compatible to IBasicString
+template<typename T,
+         typename TSubClass>
+class SharedPtrApiMixin {
+
 public:
 
-	typedef ITest ThisType;
+private:
 
-	void operator delete(void* p) {
-		if (p != lia_NULLPTR) {
-			static_cast<ThisType*>(p)->abiDestroy();
-		}
+	TSubClass& downCast() lia_NOEXCEPT {
+		return static_cast<TSubClass&>(*this);
 	}
 
-	/* vtable index 0 */ virtual void lia_CALL abiGetITestVersion(InterfaceVersion& v) const lia_NOEXCEPT = 0;
-	/* vtable index 1 */ virtual void lia_CALL abiDestroy() lia_NOEXCEPT = 0;
-	/* vtable index 2 */ virtual const char* lia_CALL abiGetName() const lia_NOEXCEPT = 0;
+	const TSubClass& downCast() const lia_NOEXCEPT {
+		return static_cast<const TSubClass&>(*this);
+	}
 };
 
+lia_STATIC_ASSERT(sizeof(SharedPtrApiMixin<char, char>) == 1u, "API class is not allowed to contain any virtual functions")
+
+}
 }
 
-lia_EXTERN_C lia_TEST_DLL_API lia::IVector<lia::int32_t>* lia_CALL createInt32Vector();
-lia_EXTERN_C lia_TEST_DLL_API lia::IVector< lia::IVector<lia::int32_t> >* lia_CALL createInt32VectorVector();
-lia_EXTERN_C lia_TEST_DLL_API lia::IString* lia_CALL createString();
-lia_EXTERN_C lia_TEST_DLL_API lia::ISharedPtr<lia::ITest>* lia_CALL createSharedPtr();
+#else /* C compiler */
+
+/* Not yet implemented */
+
+#endif
+
+#include <lia/detail/PopWarnings.h>
 
 #endif

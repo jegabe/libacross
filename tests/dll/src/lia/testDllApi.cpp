@@ -45,9 +45,40 @@ THE SOFTWARE.
 */
 #include <lia/testDllApi.h>
 #include <lia/IVector.h>
+#include <lia/ISharedPtr.h>
 #include <lia/BasicStringRef.h>
 
 using namespace lia;
+
+namespace
+{
+
+class Test lia_FINAL: public ITest
+{
+public:
+	Test() {}
+	virtual ~Test() {}
+
+	void operator delete(void* p) {
+		::operator delete(p);
+	}
+
+	virtual void lia_CALL abiGetITestVersion(InterfaceVersion& v) const lia_NOEXCEPT lia_OVERRIDE {
+		v.major = 0;
+		v.minor = 1;
+	}
+
+	virtual void lia_CALL abiDestroy() lia_NOEXCEPT lia_OVERRIDE {
+		delete this;
+	}
+
+	virtual const char* lia_CALL abiGetName() const lia_NOEXCEPT lia_OVERRIDE {
+		return "Test";
+	}
+
+};
+
+}
 
 lia_TEST_DLL_API IVector<int32_t>* lia_CALL createInt32Vector() {
 	return new VectorRef<int32_t, std::vector<int32_t> >();
@@ -59,4 +90,8 @@ lia_TEST_DLL_API IVector< IVector<int32_t> >* lia_CALL createInt32VectorVector()
 
 lia_TEST_DLL_API IString* lia_CALL createString() {
 	return new BasicStringRef<char, std::string>();
+}
+
+lia_TEST_DLL_API ISharedPtr<ITest>* lia_CALL createSharedPtr() {
+	return new SharedPtrRef<ITest>(std::make_shared<Test>());
 }
